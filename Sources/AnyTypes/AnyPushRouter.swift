@@ -60,6 +60,7 @@ private struct AnyPushView: View {
 // TODO: Remove when Apple will fix one
 
 private extension View {
+    @inlinable
     func fixedSplitNavigation(pushed: AnyPushRouter) -> some View {
         modifier(SplitNavigationFixModifier(pushed: pushed))
     }

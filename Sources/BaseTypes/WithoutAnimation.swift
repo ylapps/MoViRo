@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 func withoutAnimation(action: @escaping () -> Void) {
     UIView.setAnimationsEnabled(false)

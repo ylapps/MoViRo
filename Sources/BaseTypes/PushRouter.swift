@@ -25,6 +25,7 @@ open class PushRouter<ViewType: BaseView>: AnyPushRouter {
         fatalError("Should be overriden")
     }
 
+    @inlinable
     final override func makeContentView() -> AnyView {
         .init(ViewType.with(model))
     }
