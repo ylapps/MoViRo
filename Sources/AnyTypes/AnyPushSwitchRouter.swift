@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Combine
+import Observation
 
 @Observable
 open class AnyPushSwitchRouter: AnyPushRouter {
@@ -37,7 +37,7 @@ open class AnyPushSwitchRouter: AnyPushRouter {
 
 private struct AnyPushSwitchView: View {
 
-    @State var router: AnyPushSwitchRouter
+    @Bindable var router: AnyPushSwitchRouter
 
     var body: some View {
         router.current.makeView()
