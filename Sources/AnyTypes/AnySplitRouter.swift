@@ -20,7 +20,7 @@ open class AnySplitRouter: AnyNavigationStackRouter {
 
     public var columnVisibility: NavigationSplitViewVisibility
     public var preferredCompactColumn: NavigationSplitViewColumn
-    public var defaultDetailsView: (() -> AnyView)?
+    public let defaultDetailsView: (() -> AnyView)?
 
     @ObservationIgnored
     public var style: Style
@@ -72,6 +72,7 @@ private struct AnySplitView: View {
 private extension View {
 
     @ViewBuilder
+    @inline(__always)
     func withSplitStyle(_ style: AnySplitRouter.Style) -> some View {
         switch style {
         case .automatic:

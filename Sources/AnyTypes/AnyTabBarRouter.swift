@@ -5,7 +5,7 @@
 //  Created by Yevhenii Lytvynenko on 27.05.2025.
 //
 
-import Combine
+import SwiftUI
 
 // MARK: - Router
 
@@ -21,6 +21,10 @@ open class AnyTabBarRouter: AnyModalRouter {
             self.router = router
             self.title = title
             self.image = image
+        }
+        
+        public static func == (lhs: Tab, rhs: Tab) -> Bool {
+            lhs.router === rhs.router
         }
     }
 

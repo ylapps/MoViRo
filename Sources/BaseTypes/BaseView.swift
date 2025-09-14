@@ -17,7 +17,7 @@ public extension BaseView {
 
     static func with(_ model: Model) -> some View {
         Self(model: model)
-            .onAppear { [weak model] in model?.isAppeared = true }
-            .onDisappear { [weak model] in model?.isAppeared = false }
+            .onAppear { model.isAppeared = true }
+            .onDisappear { model.isAppeared = false }
     }
 }

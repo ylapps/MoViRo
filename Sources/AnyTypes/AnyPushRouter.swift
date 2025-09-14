@@ -13,10 +13,14 @@ open class AnyPushRouter: AnyRouter {
     /// Router pushed by this router
     public var pushed: AnyPushRouter? {
         willSet {
-            pushed?.pushing = nil
-            pushed?.stack = nil
-            newValue?.pushing = self
-            newValue?.stack = stack
+            if let oldValue = pushed {
+                oldValue.pushing = nil
+                oldValue.stack = nil
+            }
+            if let newValue = newValue {
+                newValue.pushing = self
+                newValue.stack = stack
+            }
         }
     }
 
@@ -67,15 +71,15 @@ private extension View {
 
 private struct SplitNavigationFixModifier: ViewModifier {
 
-    @State var pushed: AnyPushRouter
+    let pushed: AnyPushRouter
 
     func body(content: Content) -> some View {
-        if let split = pushed.split, split.root == pushed.pushing {
+        if let split = pushed.split, split.root === pushed.pushing {
             NavigationStack {
-                pushed.makeView()
+                content
             }
         } else {
-            pushed.makeView()
+            content
         }
     }
 }

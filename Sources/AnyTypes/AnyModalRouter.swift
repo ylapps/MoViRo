@@ -46,16 +46,19 @@ open class AnyModalRouter: AnyRouter {
 
 private extension AnyModalRouter {
 
+    @inline(__always)
     var sheet: AnyModalRouter? {
         get { presented?.transition == .sheet ? presented : nil }
         set { presented = newValue }
     }
 
+    @inline(__always)
     var fullScreen: AnyModalRouter? {
         get { presented?.transition == .fullScreen ? presented : nil }
         set { presented = newValue }
     }
 
+    @inline(__always)
     var popover: AnyModalRouter? {
         get { presented?.transition == .popover ? presented : nil }
         set { presented = newValue }
@@ -76,30 +79,22 @@ public extension AnyModalRouter {
 struct AnyModalView: View {
 
     @State var router: AnyModalRouter
-    @State private var isReadyToPresent = false
 
     var body: some View {
-        Group {
-            if isReadyToPresent {
-                router.makeContentView()
-                    .sheet(
-                        item: $router.sheet,
-                        content: { $0.makeView() }
-                    )
-                    .fullScreenCover(
-                        item: $router.fullScreen,
-                        content: { $0.makeView() }
-                    )
-                    .popover(
-                        item: $router.popover,
-                        attachmentAnchor: .rect(.bounds), // TODO: - Pass from transition
-                        arrowEdge: .bottom, // TODO: - Pass from transition
-                        content: { $0.makeView() }
-                    )
-            } else {
-                router.makeContentView()
-            }
-        }
-        .onAppear { isReadyToPresent = true }
+        router.makeContentView()
+            .sheet(
+                item: $router.sheet,
+                content: { $0.makeView() }
+            )
+            .fullScreenCover(
+                item: $router.fullScreen,
+                content: { $0.makeView() }
+            )
+            .popover(
+                item: $router.popover,
+                attachmentAnchor: .rect(.bounds),
+                arrowEdge: .bottom,
+                content: { $0.makeView() }
+            )
     }
 }

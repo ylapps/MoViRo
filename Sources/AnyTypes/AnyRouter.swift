@@ -12,12 +12,12 @@ open class AnyRouter: Identifiable {
 
     // MARK: <Identifiable>
 
-    public let id: String = UUID().uuidString
+    public let id = UUID()
 
     // MARK: Initialization
 
-    init() { print("🧩 [ROUTER] \(Self.self) init") }
-    deinit { print("☠️ [ROUTER] \(Self.self) deinit") }
+    init() {}
+    deinit {}
 
     // MARK: Makers
 
@@ -28,7 +28,7 @@ open class AnyRouter: Identifiable {
 
 extension AnyRouter: Equatable {
     nonisolated public static func == (lhs: AnyRouter, rhs: AnyRouter) -> Bool {
-        lhs.id == rhs.id
+        lhs === rhs
     }
 }
 

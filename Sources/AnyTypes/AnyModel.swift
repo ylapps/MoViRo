@@ -14,15 +14,17 @@ open class AnyModel {
 
     private var appearingCount = 0
 
-    public internal(set) var isAppeared: Bool = false {
+    public internal(set) var isAppeared = false {
         didSet {
+            guard oldValue != isAppeared else { return }
+            
             if isAppeared {
-                if appearingCount == 0 {
+                appearingCount += 1
+                if appearingCount == 1 {
                     onAppear()
                 }
-                appearingCount += 1
             } else {
-                appearingCount -= 1
+                appearingCount = max(0, appearingCount - 1)
                 if appearingCount == 0 {
                     onDisappear()
                 }
@@ -32,11 +34,11 @@ open class AnyModel {
 
     // MARK: Initialization
 
-    init() { print("🧩 [MODEL] \(Self.self) init") }
-    deinit { print("☠️ [MODEL] \(Self.self) deinit") }
+    init() {}
+    deinit {}
 
     // MARK: Life cycle
 
-    open func onAppear() { print("💡 [MODEL] \(Self.self) appear") }
-    open func onDisappear() { print("🫣 [MODEL] \(Self.self) disappear") }
+    open func onAppear() {}
+    open func onDisappear() {}
 }

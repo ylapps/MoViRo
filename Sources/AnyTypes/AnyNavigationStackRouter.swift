@@ -28,8 +28,11 @@ open class AnyNavigationStackRouter: AnyModalRouter {
 private extension AnyPushRouter {
 
     func setStackForAllPushed(_ stack: AnyNavigationStackRouter) {
-        self.stack = stack
-        pushed?.setStackForAllPushed(stack)
+        var current: AnyPushRouter? = self
+        while let router = current {
+            router.stack = stack
+            current = router.pushed
+        }
     }
 }
 
