@@ -7,12 +7,18 @@
 
 import SwiftUI
 
+@MainActor
 func withoutAnimation(action: @escaping () -> Void) {
+    let wasAnimationEnabled = UIView.areAnimationsEnabled
     UIView.setAnimationsEnabled(false)
-    var transaction = Transaction(animation: .easeIn(duration: 0))
+    
+    var transaction = Transaction(animation: nil)
     transaction.disablesAnimations = true
+    
     withTransaction(transaction) {
         action()
-        UIView.setAnimationsEnabled(true)
     }
+    
+    // Restore previous animation state
+    UIView.setAnimationsEnabled(wasAnimationEnabled)
 }

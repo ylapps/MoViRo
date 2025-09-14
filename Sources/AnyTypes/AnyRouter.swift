@@ -12,17 +12,22 @@ open class AnyRouter: Identifiable {
 
     // MARK: <Identifiable>
 
-    public let id: String = UUID().uuidString
+    public let id: UUID = UUID() // Use UUID directly instead of String for better performance
 
     // MARK: Initialization
 
-    init() { print("🧩 [ROUTER] \(Self.self) init") }
-    deinit { print("☠️ [ROUTER] \(Self.self) deinit") }
+    init() { 
+        MoviroLogger.logInit(Self.self, category: .router)
+    }
+    
+    deinit { 
+        MoviroLogger.logDeinit(Self.self, category: .router)
+    }
 
     // MARK: Makers
 
     func makeContentView() -> AnyView {
-        fatalError("Should be overriden")
+        fatalError("makeContentView() must be overridden in subclass")
     }
 }
 

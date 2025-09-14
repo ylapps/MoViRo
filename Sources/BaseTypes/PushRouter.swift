@@ -22,7 +22,7 @@ open class PushRouter<ViewType: BaseView>: AnyPushRouter {
     // MARK: Makers
 
     open func makeModel() -> ViewType.Model {
-        fatalError("Should be overriden")
+        fatalError("makeModel() must be overridden in subclass")
     }
 
     final override func makeContentView() -> AnyView {

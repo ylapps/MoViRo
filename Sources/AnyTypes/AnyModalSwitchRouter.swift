@@ -13,8 +13,11 @@ open class AnyModalSwitchRouter: AnyModalRouter {
 
     public var current: AnyModalRouter {
         willSet {
-            current.presenting = nil
-            newValue.presenting = self
+            // Clean up old relationship
+            if current !== newValue {
+                current.presenting = nil
+                newValue.presenting = self
+            }
         }
     }
 

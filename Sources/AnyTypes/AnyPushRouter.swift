@@ -13,10 +13,17 @@ open class AnyPushRouter: AnyRouter {
     /// Router pushed by this router
     public var pushed: AnyPushRouter? {
         willSet {
-            pushed?.pushing = nil
-            pushed?.stack = nil
-            newValue?.pushing = self
-            newValue?.stack = stack
+            // Clean up old relationships first
+            if let oldPushed = pushed {
+                oldPushed.pushing = nil
+                oldPushed.stack = nil
+            }
+            
+            // Set up new relationships
+            if let newPushed = newValue {
+                newPushed.pushing = self
+                newPushed.stack = stack
+            }
         }
     }
 
@@ -38,6 +45,38 @@ open class AnyPushRouter: AnyRouter {
 
     public final func makeView() -> some View {
         AnyPushView(router: self)
+    }
+    
+    // MARK: - Navigation Convenience Methods
+    
+    /// Pushes a router onto the navigation stack
+    public func push(_ router: AnyPushRouter) {
+        pushed = router
+    }
+    
+    /// Pops the current router from the navigation stack
+    public func pop() {
+        pushed = nil
+    }
+    
+    /// Pops to the root of the navigation stack
+    public func popToRoot() {
+        var current = self
+        while let pushing = current.pushing {
+            current = pushing
+        }
+        current.pushed = nil
+    }
+    
+    /// Returns the depth of the navigation stack
+    public var navigationDepth: Int {
+        var depth = 0
+        var current = self
+        while let pushed = current.pushed {
+            depth += 1
+            current = pushed
+        }
+        return depth
     }
 }
 
@@ -72,10 +111,10 @@ private struct SplitNavigationFixModifier: ViewModifier {
     func body(content: Content) -> some View {
         if let split = pushed.split, split.root == pushed.pushing {
             NavigationStack {
-                pushed.makeView()
+                content
             }
         } else {
-            pushed.makeView()
+            content
         }
     }
 }
