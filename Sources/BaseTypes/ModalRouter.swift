@@ -22,23 +22,32 @@ open class ModalRouter<ViewType: BaseView>: AnyModalRouter {
         presented: AnyModalRouter? = nil
     ) {
         super.init(transition: transition, presented: presented)
-//        isPresentedSub = $presented
-//            .removeDuplicates()
-//            .sink { [unowned self] presented in
-//                if let presented {
-//                    if presented.transition == .fullScreen {
-//                        model.isAppeared = false
-//                    }
-//                } else if !model.isAppeared {
-//                    model.isAppeared = true
-//                }
-//            }
+        setupPresentationObserver()
+    }
+    
+    private func setupPresentationObserver() {
+        // Observe presentation changes to manage model appearance state
+        isPresentedSub = $presented
+            .removeDuplicates { $0?.id == $1?.id }
+            .sink { [weak self] presented in
+                guard let self = self else { return }
+                
+                if let presented = presented {
+                    // If presenting a full screen modal, hide current model
+                    if presented.transition == .fullScreen {
+                        self.model.isAppeared = false
+                    }
+                } else if !self.model.isAppeared {
+                    // If dismissing and model is not appeared, show it again
+                    self.model.isAppeared = true
+                }
+            }
     }
 
     // MARK: Makers
 
     open func makeModel() -> ViewType.Model {
-        fatalError("Should be overriden")
+        fatalError("makeModel() must be overridden in subclass")
     }
 
     override func makeContentView() -> AnyView {

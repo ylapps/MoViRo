@@ -13,10 +13,13 @@ open class AnyPushSwitchRouter: AnyPushRouter {
 
     public var current: AnyPushRouter {
         willSet {
-            current.pushing = nil
-            current.stack = nil
-            newValue.pushing = pushing
-            newValue.stack = stack
+            // Clean up old relationships only if changing to different router
+            if current !== newValue {
+                current.pushing = nil
+                current.stack = nil
+                newValue.pushing = pushing
+                newValue.stack = stack
+            }
         }
     }
 

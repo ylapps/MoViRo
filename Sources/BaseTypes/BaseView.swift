@@ -20,4 +20,10 @@ public extension BaseView {
             .onAppear { [weak model] in model?.isAppeared = true }
             .onDisappear { [weak model] in model?.isAppeared = false }
     }
+    
+    /// Creates a view with a model using a builder pattern
+    static func build(@ViewBuilder content: @escaping (Model) -> Model) -> some View where Model: AnyModel {
+        let model = content(Model())
+        return Self.with(model)
+    }
 }

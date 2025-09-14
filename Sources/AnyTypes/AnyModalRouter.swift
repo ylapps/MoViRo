@@ -24,8 +24,15 @@ open class AnyModalRouter: AnyRouter {
     /// Router presented from this router.
     public var presented: AnyModalRouter? {
         willSet {
-            presented?.presenting = nil
-            newValue?.presenting = self
+            // Clean up old relationship first
+            if let oldPresented = presented {
+                oldPresented.presenting = nil
+            }
+            
+            // Set up new relationship
+            if let newPresented = newValue {
+                newPresented.presenting = self
+            }
         }
     }
 
@@ -36,11 +43,59 @@ open class AnyModalRouter: AnyRouter {
         self._presented = presented
         super.init()
     }
+    
+    // Convenience initializers
+    public static func sheet(presented: AnyModalRouter? = nil) -> Self {
+        Self(transition: .sheet, presented: presented)
+    }
+    
+    public static func fullScreen(presented: AnyModalRouter? = nil) -> Self {
+        Self(transition: .fullScreen, presented: presented)
+    }
+    
+    public static func popover(presented: AnyModalRouter? = nil) -> Self {
+        Self(transition: .popover, presented: presented)
+    }
 
     // MARK: Makers
 
     public final func makeView() -> some View {
         AnyModalView(router: self)
+    }
+    
+    // MARK: - Modal Presentation Convenience Methods
+    
+    /// Presents a router modally
+    public func present(_ router: AnyModalRouter) {
+        presented = router
+    }
+    
+    /// Dismisses the currently presented router
+    public func dismiss() {
+        presented = nil
+    }
+    
+    /// Dismisses all presented routers in the chain
+    public func dismissAll() {
+        var current = self
+        while current.presented != nil {
+            let next = current.presented
+            current.presented = nil
+            if let next = next {
+                current = next
+            }
+        }
+    }
+    
+    /// Returns the depth of the modal presentation chain
+    public var modalDepth: Int {
+        var depth = 0
+        var current = self
+        while let presented = current.presented {
+            depth += 1
+            current = presented
+        }
+        return depth
     }
 }
 
@@ -76,30 +131,22 @@ public extension AnyModalRouter {
 struct AnyModalView: View {
 
     @State var router: AnyModalRouter
-    @State private var isReadyToPresent = false
 
     var body: some View {
-        Group {
-            if isReadyToPresent {
-                router.makeContentView()
-                    .sheet(
-                        item: $router.sheet,
-                        content: { $0.makeView() }
-                    )
-                    .fullScreenCover(
-                        item: $router.fullScreen,
-                        content: { $0.makeView() }
-                    )
-                    .popover(
-                        item: $router.popover,
-                        attachmentAnchor: .rect(.bounds), // TODO: - Pass from transition
-                        arrowEdge: .bottom, // TODO: - Pass from transition
-                        content: { $0.makeView() }
-                    )
-            } else {
-                router.makeContentView()
-            }
-        }
-        .onAppear { isReadyToPresent = true }
+        router.makeContentView()
+            .sheet(
+                item: $router.sheet,
+                content: { $0.makeView() }
+            )
+            .fullScreenCover(
+                item: $router.fullScreen,
+                content: { $0.makeView() }
+            )
+            .popover(
+                item: $router.popover,
+                attachmentAnchor: .rect(.bounds), // TODO: - Pass from transition
+                arrowEdge: .bottom, // TODO: - Pass from transition
+                content: { $0.makeView() }
+            )
     }
 }

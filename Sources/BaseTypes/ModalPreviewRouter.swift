@@ -32,9 +32,7 @@ private struct ModalPreviewView: View {
             if router.needsAnimation {
                 router.presented = router.presentedProvider()
             } else {
-                var transaction = Transaction(animation: .easeIn(duration: 0))
-                transaction.disablesAnimations = true
-                withTransaction(transaction) {
+                withoutAnimation {
                     router.presented = router.presentedProvider()
                 }
             }
