@@ -27,18 +27,20 @@ private struct ModalPreviewView: View {
     @State var router: ModalPreviewRouter
 
     var body: some View {
-        Text("Modal Preview")
-        Button("Present") {
-            if router.needsAnimation {
-                router.presented = router.presentedProvider()
-            } else {
-                var transaction = Transaction(animation: .easeIn(duration: 0))
-                transaction.disablesAnimations = true
-                withTransaction(transaction) {
+        VStack(spacing: 20) {
+            Text("Modal Preview")
+                .font(.title2)
+            
+            Button("Present") {
+                if router.needsAnimation {
                     router.presented = router.presentedProvider()
+                } else {
+                    withoutAnimation {
+                        router.presented = router.presentedProvider()
+                    }
                 }
             }
+            .buttonStyle(.borderedProminent)
         }
-        .buttonStyle(.borderedProminent)
     }
 }

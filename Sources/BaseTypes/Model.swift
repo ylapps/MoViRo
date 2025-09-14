@@ -18,9 +18,7 @@ open class Model<Router>: AnyModel, Identifiable {
     // MARK: Initialization
 
     public init(router: Router?) {
-        if let router {
-            self.routerWrapper = .init(wrapped: router)
-        }
+        self.routerWrapper = router.map { .init(wrapped: $0) }
         super.init()
     }
 
@@ -43,17 +41,22 @@ extension Model: Hashable {
 
 private struct WeakAnySemanticWrapper<T> {
     private weak var object: AnyObject?
-    private var value: T?
+    private let value: T?
 
     var wrapped: T? {
-        value ?? object as? T
+        if let object = object {
+            return object as? T
+        }
+        return value
     }
 
     init(wrapped: T) {
-        if Mirror(reflecting: wrapped).displayStyle == .class {
-            object = wrapped as AnyObject
+        if type(of: wrapped as Any) is AnyClass {
+            self.object = wrapped as AnyObject
+            self.value = nil
         } else {
-            value = wrapped
+            self.object = nil
+            self.value = wrapped
         }
     }
 }

@@ -6,13 +6,13 @@
 //
 
 import SwiftUI
-import Combine
 
 @Observable
 open class AnyModalSwitchRouter: AnyModalRouter {
 
     public var current: AnyModalRouter {
         willSet {
+            guard newValue !== current else { return }
             current.presenting = nil
             newValue.presenting = self
         }

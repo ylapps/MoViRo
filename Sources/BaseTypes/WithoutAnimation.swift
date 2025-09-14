@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-func withoutAnimation(action: @escaping () -> Void) {
+@inline(__always)
+public func withoutAnimation(action: () -> Void) {
     UIView.setAnimationsEnabled(false)
-    var transaction = Transaction(animation: .easeIn(duration: 0))
+    defer { UIView.setAnimationsEnabled(true) }
+    
+    var transaction = Transaction()
     transaction.disablesAnimations = true
-    withTransaction(transaction) {
-        action()
-        UIView.setAnimationsEnabled(true)
-    }
+    withTransaction(transaction, action)
 }

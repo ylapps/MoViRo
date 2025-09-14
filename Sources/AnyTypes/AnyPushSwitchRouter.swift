@@ -6,13 +6,13 @@
 //
 
 import SwiftUI
-import Combine
 
 @Observable
 open class AnyPushSwitchRouter: AnyPushRouter {
 
     public var current: AnyPushRouter {
         willSet {
+            guard newValue !== current else { return }
             current.pushing = nil
             current.stack = nil
             newValue.pushing = pushing
