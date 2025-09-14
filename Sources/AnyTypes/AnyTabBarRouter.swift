@@ -5,7 +5,9 @@
 //  Created by Yevhenii Lytvynenko on 27.05.2025.
 //
 
-import Combine
+import SwiftUI
+import Observation
+import UIKit
 
 // MARK: - Router
 
@@ -42,7 +44,7 @@ open class AnyTabBarRouter: AnyModalRouter {
 
 private struct AnyTabBarView: View {
 
-    @State var router: AnyTabBarRouter
+    @Bindable var router: AnyTabBarRouter
 
     var body: some View {
         TabView(selection: $router.selectedTabIndex) {
@@ -50,8 +52,11 @@ private struct AnyTabBarView: View {
                 let tab = router.tabs[idx]
                 tab.router.makeView()
                     .tabItem({
-                        Text(tab.title)
-                        Image(uiImage: tab.image)
+                        Label {
+                            Text(tab.title)
+                        } icon: {
+                            Image(uiImage: tab.image)
+                        }
                     })
                     .tag(idx)
             }

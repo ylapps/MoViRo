@@ -5,6 +5,9 @@
 //  Created by Yevhenii Lytvynenko on 27.05.2025.
 //
 
+import SwiftUI
+import Observation
+
 @Observable
 public final class ModalPreviewRouter: AnyModalRouter {
 
@@ -24,7 +27,7 @@ public final class ModalPreviewRouter: AnyModalRouter {
 
 private struct ModalPreviewView: View {
 
-    @State var router: ModalPreviewRouter
+    @Bindable var router: ModalPreviewRouter
 
     var body: some View {
         Text("Modal Preview")

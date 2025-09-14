@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Observation
 
 // MARK: - Router
 
@@ -22,7 +23,7 @@ open class AnyModalRouter: AnyRouter {
     public internal(set) weak var presenting: AnyModalRouter?
 
     /// Router presented from this router.
-    public var presented: AnyModalRouter? {
+    public var presented: AnyModalRouter? = nil {
         willSet {
             presented?.presenting = nil
             newValue?.presenting = self
@@ -33,8 +34,8 @@ open class AnyModalRouter: AnyRouter {
 
     init(transition: Transition, presented: AnyModalRouter? = nil) {
         self.transition = transition
-        self._presented = presented
         super.init()
+        self.presented = presented
     }
 
     // MARK: Makers
@@ -75,7 +76,7 @@ public extension AnyModalRouter {
 
 struct AnyModalView: View {
 
-    @State var router: AnyModalRouter
+    @Bindable var router: AnyModalRouter
     @State private var isReadyToPresent = false
 
     var body: some View {

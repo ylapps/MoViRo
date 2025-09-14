@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Observation
 
 // MARK: - Router
 
@@ -50,7 +51,7 @@ open class AnySplitRouter: AnyNavigationStackRouter {
 
 private struct AnySplitView: View {
 
-    @State var router: AnySplitRouter
+    @Bindable var router: AnySplitRouter
 
     var body: some View {
         NavigationSplitView(

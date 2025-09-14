@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Observation
 
 // MARK: - Router
 
@@ -37,7 +38,7 @@ private extension AnyPushRouter {
 
 private struct AnyNavigationStackView: View {
 
-    @State var router: AnyNavigationStackRouter
+    @Bindable var router: AnyNavigationStackRouter
 
     var body: some View {
         NavigationStack {

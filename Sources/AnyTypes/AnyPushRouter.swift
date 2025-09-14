@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Observation
 
 @Observable
 open class AnyPushRouter: AnyRouter {
@@ -45,7 +46,7 @@ open class AnyPushRouter: AnyRouter {
 
 private struct AnyPushView: View {
 
-    @State var router: AnyPushRouter
+    @Bindable var router: AnyPushRouter
 
     var body: some View {
         router.makeContentView()
@@ -67,7 +68,7 @@ private extension View {
 
 private struct SplitNavigationFixModifier: ViewModifier {
 
-    @State var pushed: AnyPushRouter
+    @Bindable var pushed: AnyPushRouter
 
     func body(content: Content) -> some View {
         if let split = pushed.split, split.root == pushed.pushing {

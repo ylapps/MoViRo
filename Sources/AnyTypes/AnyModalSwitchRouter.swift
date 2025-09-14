@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Combine
+import Observation
 
 @Observable
 open class AnyModalSwitchRouter: AnyModalRouter {
@@ -35,7 +35,7 @@ open class AnyModalSwitchRouter: AnyModalRouter {
 
 private struct AnyModalSwitchView: View {
 
-    @State var router: AnyModalSwitchRouter
+    @Bindable var router: AnyModalSwitchRouter
 
     var body: some View {
         router.current.makeView()
