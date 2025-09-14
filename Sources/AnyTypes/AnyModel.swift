@@ -32,11 +32,11 @@ open class AnyModel {
 
     // MARK: Initialization
 
-    init() { print("🧩 [MODEL] \(Self.self) init") }
-    deinit { print("☠️ [MODEL] \(Self.self) deinit") }
+    init() { debugLog("🧩 [MODEL] \(Self.self) init") }
+    deinit { debugLog("☠️ [MODEL] \(Self.self) deinit") }
 
     // MARK: Life cycle
 
-    open func onAppear() { print("💡 [MODEL] \(Self.self) appear") }
-    open func onDisappear() { print("🫣 [MODEL] \(Self.self) disappear") }
+    open func onAppear() { debugLog("💡 [MODEL] \(Self.self) appear") }
+    open func onDisappear() { debugLog("🫣 [MODEL] \(Self.self) disappear") }
 }
