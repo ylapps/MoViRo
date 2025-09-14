@@ -32,3 +32,4 @@ open class PushRouter<ViewType: BaseView>: AnyPushRouter {
 
 public typealias NavigationStackRouter = AnyNavigationStackRouter
 public typealias TabBarRouter = AnyTabBarRouter
+public typealias AlertRouter = AnyAlertRouter
