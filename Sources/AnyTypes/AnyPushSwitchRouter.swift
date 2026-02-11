@@ -14,9 +14,9 @@ open class AnyPushSwitchRouter: AnyPushRouter {
     public var current: AnyPushRouter {
         willSet {
             current.pushing = nil
-            current.stack = nil
+            current.updateStack(with: nil)
             newValue.pushing = pushing
-            newValue.stack = stack
+            newValue.updateStack(with: stack)
         }
     }
 
@@ -31,15 +31,20 @@ open class AnyPushSwitchRouter: AnyPushRouter {
     }
 
     override func makeContentView() -> AnyView {
-        .init(AnyPushSwitchView(router: self))
+        .init(AnyPushSwitchContentView(router: self))
+    }
+
+    override func updateStack(with newStack: AnyNavigationStackRouter?) {
+        super.updateStack(with: newStack)
+        current.updateStack(with: newStack)
     }
 }
 
-private struct AnyPushSwitchView: View {
+private struct AnyPushSwitchContentView: View {
 
     @State var router: AnyPushSwitchRouter
 
     var body: some View {
-        router.current.makeView()
+        router.current.makeContentView()
     }
 }

@@ -12,28 +12,7 @@ open class ModalRouter<ViewType: BaseView>: AnyModalRouter {
 
     // MARK: State
 
-    private var isPresentedSub: AnyCancellable?
     public private(set) lazy var model = makeModel()
-
-    // MARK: Initialization
-
-    public override init(
-        transition: AnyModalRouter.Transition,
-        presented: AnyModalRouter? = nil
-    ) {
-        super.init(transition: transition, presented: presented)
-//        isPresentedSub = $presented
-//            .removeDuplicates()
-//            .sink { [unowned self] presented in
-//                if let presented {
-//                    if presented.transition == .fullScreen {
-//                        model.isAppeared = false
-//                    }
-//                } else if !model.isAppeared {
-//                    model.isAppeared = true
-//                }
-//            }
-    }
 
     // MARK: Makers
 

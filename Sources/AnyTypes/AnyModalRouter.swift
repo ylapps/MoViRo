@@ -31,7 +31,7 @@ open class AnyModalRouter: AnyRouter {
 
     // MARK: Initialization
 
-    init(transition: Transition, presented: AnyModalRouter? = nil) {
+    public init(transition: Transition, presented: AnyModalRouter? = nil) {
         self.transition = transition
         self._presented = presented
         super.init()

@@ -17,19 +17,11 @@ open class AnyNavigationStackRouter: AnyModalRouter {
     public init(root: AnyPushRouter, transition: Transition, presented: AnyModalRouter? = nil) {
         self.root = root
         super.init(transition: transition, presented: presented)
-        root.setStackForAllPushed(self)
+        root.updateStack(with: self)
     }
 
     override func makeContentView() -> AnyView {
         .init(AnyNavigationStackView(router: self))
-    }
-}
-
-private extension AnyPushRouter {
-
-    func setStackForAllPushed(_ stack: AnyNavigationStackRouter) {
-        self.stack = stack
-        pushed?.setStackForAllPushed(stack)
     }
 }
 

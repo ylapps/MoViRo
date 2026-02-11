@@ -12,7 +12,7 @@ open class AnyRouter: Identifiable {
 
     // MARK: <Identifiable>
 
-    public let id: String = UUID().uuidString
+    public let id = UUID()
 
     // MARK: Initialization
 

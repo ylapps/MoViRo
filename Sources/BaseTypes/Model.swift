@@ -7,12 +7,12 @@
 
 import Foundation
 
-open class Model<Router>: AnyModel, Identifiable {
+// MARK: - Model
+
+open class Model<Router>: AnyModel {
 
     public let id = UUID()
-
     private var routerWrapper: WeakAnySemanticWrapper<Router>?
-
     public var router: Router? { routerWrapper?.wrapped }
 
     // MARK: Initialization
@@ -21,7 +21,6 @@ open class Model<Router>: AnyModel, Identifiable {
         if let router {
             self.routerWrapper = .init(wrapped: router)
         }
-        super.init()
     }
 
     public init() where Router == Never {}
@@ -40,6 +39,8 @@ extension Model: Hashable {
         hasher.combine(id)
     }
 }
+
+// MARK: - WeakAnySemanticWrapper
 
 private struct WeakAnySemanticWrapper<T> {
     private weak var object: AnyObject?

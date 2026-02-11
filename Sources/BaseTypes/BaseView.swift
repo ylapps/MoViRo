@@ -8,10 +8,13 @@
 import SwiftUI
 
 @MainActor
-public protocol BaseView: View {
-    associatedtype Model: AnyModel
+public protocol ModelHolding {
+    associatedtype Model
     init(model: Model)
 }
+
+@MainActor
+public protocol BaseView: ModelHolding where Self: View, Model: AnyModel {}
 
 public extension BaseView {
 

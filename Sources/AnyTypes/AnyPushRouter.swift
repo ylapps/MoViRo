@@ -14,9 +14,9 @@ open class AnyPushRouter: AnyRouter {
     public var pushed: AnyPushRouter? {
         willSet {
             pushed?.pushing = nil
-            pushed?.stack = nil
+            pushed?.updateStack(with: nil)
             newValue?.pushing = self
-            newValue?.stack = stack
+            newValue?.updateStack(with: stack)
         }
     }
 
@@ -34,10 +34,16 @@ open class AnyPushRouter: AnyRouter {
     init(pushed: AnyPushRouter? = nil) {
         self.pushed = pushed
         super.init()
+        pushed?.pushing = self
     }
 
     public final func makeView() -> some View {
         AnyPushView(router: self)
+    }
+
+    func updateStack(with newStack: AnyNavigationStackRouter?) {
+        stack = newStack
+        pushed?.updateStack(with: newStack)
     }
 }
 
