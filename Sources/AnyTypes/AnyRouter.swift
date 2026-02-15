@@ -16,8 +16,8 @@ open class AnyRouter: Identifiable {
 
     // MARK: Initialization
 
-    init() { print("🧩 [ROUTER] \(Self.self) init") }
-    deinit { print("☠️ [ROUTER] \(Self.self) deinit") }
+    init() { debugLog("🧩 [ROUTER] \(Self.self) init") }
+    deinit { debugLog("☠️ [ROUTER] \(Self.self) deinit") }
 
     // MARK: Makers
 
