@@ -5,6 +5,19 @@
 
 import SwiftUI
 
+// MARK: - Routable
+
+@MainActor
+protocol PushSwitchRoutable {
+    func showPushSwitch()
+}
+
+extension PushSwitchRoutable where Self: AnyPushRouter {
+    func showPushSwitch() {
+        pushed = SamplePushSwitchRouter()
+    }
+}
+
 // MARK: - Push Switch Content View
 
 /// View displayed inside the push switch. Shows content and a toggle button.

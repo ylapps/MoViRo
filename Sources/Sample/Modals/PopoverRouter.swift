@@ -5,6 +5,25 @@
 
 import SwiftUI
 
+// MARK: - Routable
+
+@MainActor
+protocol PopoverRoutable {
+    func showPopover()
+}
+
+extension PopoverRoutable where Self: AnyModalRouter {
+    func showPopover() {
+        presented = PopoverRouter()
+    }
+}
+
+extension PopoverRoutable where Self: AnyPushRouter {
+    func showPopover() {
+        stack?.presented = PopoverRouter()
+    }
+}
+
 // MARK: - Model
 
 @Observable

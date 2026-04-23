@@ -5,6 +5,25 @@
 
 import SwiftUI
 
+// MARK: - Routable
+
+@MainActor
+protocol ModalSwitchRoutable {
+    func showModalSwitch()
+}
+
+extension ModalSwitchRoutable where Self: AnyModalRouter {
+    func showModalSwitch() {
+        presented = SampleModalSwitchRouter()
+    }
+}
+
+extension ModalSwitchRoutable where Self: AnyPushRouter {
+    func showModalSwitch() {
+        stack?.presented = SampleModalSwitchRouter()
+    }
+}
+
 // MARK: - Modal Switch Content View
 
 /// View displayed inside the modal switch. Shows content with toggle and close buttons.

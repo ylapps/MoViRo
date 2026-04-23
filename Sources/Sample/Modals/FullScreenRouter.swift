@@ -5,6 +5,25 @@
 
 import SwiftUI
 
+// MARK: - Routable
+
+@MainActor
+protocol FullScreenRoutable {
+    func showFullScreen()
+}
+
+extension FullScreenRoutable where Self: AnyModalRouter {
+    func showFullScreen() {
+        presented = FullScreenRouter()
+    }
+}
+
+extension FullScreenRoutable where Self: AnyPushRouter {
+    func showFullScreen() {
+        stack?.presented = FullScreenRouter()
+    }
+}
+
 // MARK: - Model
 
 @Observable

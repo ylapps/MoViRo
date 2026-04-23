@@ -5,6 +5,25 @@
 
 import SwiftUI
 
+// MARK: - Routable
+
+@MainActor
+protocol SheetRoutable {
+    func showSheet()
+}
+
+extension SheetRoutable where Self: AnyModalRouter {
+    func showSheet() {
+        presented = SheetRouter()
+    }
+}
+
+extension SheetRoutable where Self: AnyPushRouter {
+    func showSheet() {
+        stack?.presented = SheetRouter()
+    }
+}
+
 // MARK: - Model
 
 @Observable

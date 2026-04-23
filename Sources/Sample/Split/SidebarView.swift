@@ -20,7 +20,7 @@ struct SidebarView: BaseView {
         List {
             ForEach(model.items, id: \.self) { item in
                 Button(item) {
-                    model.router?.pushDetail(title: item)
+                    model.router?.showSidebarDetail(title: item)
                 }
             }
         }

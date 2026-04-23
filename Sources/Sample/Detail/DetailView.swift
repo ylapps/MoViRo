@@ -21,13 +21,13 @@ struct DetailView: BaseView {
         List {
             Section("Modal from Detail") {
                 Button("Present Sheet") {
-                    model.router?.presentSheet()
+                    model.router?.showSheet()
                 }
                 Button("Present Full Screen") {
-                    model.router?.presentFullScreen()
+                    model.router?.showFullScreen()
                 }
                 Button("Present Popover") {
-                    model.router?.presentPopover()
+                    model.router?.showPopover()
                 }
             }
 
@@ -51,4 +51,8 @@ struct DetailView: BaseView {
         }
         .navigationTitle("Detail")
     }
+}
+
+#Preview {
+    NavigationStackRouter(root: DetailRouter(), transition: .fullScreen).makeView()
 }

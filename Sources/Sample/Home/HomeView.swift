@@ -20,22 +20,31 @@ struct HomeView: BaseView {
         List {
             Section("Push Navigation") {
                 Button("Push Detail") {
-                    model.router?.pushDetail()
+                    model.router?.showDetail()
                 }
                 Button("Push Switch Screen") {
-                    model.router?.pushSwitchScreen()
+                    model.router?.showPushSwitch()
                 }
             }
 
             Section("Modal Navigation") {
                 Button("Present Sheet") {
-                    model.router?.presentSheet()
+                    model.router?.showSheet()
                 }
                 Button("Present Full Screen") {
-                    model.router?.presentFullScreen()
+                    model.router?.showFullScreen()
                 }
                 Button("Present Modal Switch") {
-                    model.router?.presentModalSwitch()
+                    model.router?.showModalSwitch()
+                }
+            }
+
+            Section("Window Navigation") {
+                Button("Show Window Alert") {
+                    model.router?.showWindowAlert()
+                }
+                Button("Show Window Toast") {
+                    model.router?.showWindowToast()
                 }
             }
         }

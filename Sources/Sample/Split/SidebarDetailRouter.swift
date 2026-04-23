@@ -5,6 +5,19 @@
 
 import SwiftUI
 
+// MARK: - Routable
+
+@MainActor
+protocol SidebarDetailRoutable {
+    func showSidebarDetail(title: String)
+}
+
+extension SidebarDetailRoutable where Self: AnyPushRouter {
+    func showSidebarDetail(title: String) {
+        pushed = SidebarDetailRouter(title: title)
+    }
+}
+
 // MARK: - Model
 
 @Observable

@@ -5,28 +5,35 @@
 
 import SwiftUI
 
+// MARK: - Routable
+
+@MainActor
+protocol DetailRoutable {
+    func showDetail()
+}
+
+extension DetailRoutable where Self: AnyPushRouter {
+    func showDetail() {
+        pushed = DetailRouter()
+    }
+}
+
+// MARK: - Interface
+
+@MainActor
+protocol DetailRouterInterface:
+    SheetRoutable,
+    FullScreenRoutable,
+    PopoverRoutable {}
+
 // MARK: - Router
 
 /// Push router for the detail screen. Demonstrates `ClosableRouter` for popping
 /// and presenting various modal transitions.
-final class DetailRouter: PushRouter<DetailView>, ClosableRouter {
+final class DetailRouter: PushRouter<DetailView>, ClosableRouter, DetailRouterInterface {
 
     override func makeModel() -> DetailModel {
         DetailModel(router: self)
-    }
-
-    // MARK: Modal Presentations
-
-    func presentSheet() {
-        stack?.presented = SheetRouter()
-    }
-
-    func presentFullScreen() {
-        stack?.presented = FullScreenRouter()
-    }
-
-    func presentPopover() {
-        stack?.presented = PopoverRouter()
     }
 
     // MARK: Alert
@@ -50,7 +57,7 @@ final class DetailRouter: PushRouter<DetailView>, ClosableRouter {
             actions: [
                 .init(title: "Cancel", role: .cancel),
                 .init(title: "Open Sheet") { [weak self] in
-                    self?.stack?.presented = SheetRouter()
+                    self?.showSheet()
                 }
             ]
         )
@@ -59,7 +66,7 @@ final class DetailRouter: PushRouter<DetailView>, ClosableRouter {
     /// Presents a sheet first, then queues an alert on the current screen behind it.
     /// The alert becomes visible once the sheet is dismissed.
     func showSheetThenAlert() {
-        stack?.presented = SheetRouter()
+        showSheet()
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(500))
             presentAlert(
