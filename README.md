@@ -17,7 +17,7 @@ Add Moviro to your project via Xcode or in your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ylapps/Moviro.git", from: "1.0.0")
+    .package(url: "https://github.com/ylapps/MoViRo.git", from: "1.1.0")
 ]
 ```
 
@@ -62,8 +62,9 @@ AnyRouter                        Base class for all routers
 │   │   └── AnySplitRouter       Two-column NavigationSplitView
 │   ├── AnyTabBarRouter          UITabBarController-style tabs
 │   └── AnyModalSwitchRouter     Swap modal content without dismissing
-└── AnyPushRouter                Push navigation via navigationDestination
-    └── AnyPushSwitchRouter      Swap pushed content in-place
+├── AnyPushRouter                Push navigation via navigationDestination
+│   └── AnyPushSwitchRouter      Swap pushed content in-place
+└── AnyWindowRouter              App-level UIWindow management (overlays)
 ```
 
 ### Concrete Types (you subclass these)
@@ -74,6 +75,9 @@ AnyRouter                        Base class for all routers
 | `ModalRouter<V>` | A screen presented as a modal |
 | `NavigationStackRouter` | Wrapping a push flow in `NavigationStack` |
 | `TabBarRouter` | Tab-based root navigation |
+| `WindowRouter<M>` | App-level window management (alerts, toasts) |
+| `ResultModalRouter<V, R>` | Modal that returns a typed result |
+| `ResultPushRouter<V, R>` | Push screen that returns a typed result |
 
 ## Usage
 
@@ -216,37 +220,16 @@ func presentSheet() {
 }
 ```
 
-### Dismissing (ClosableRouter)
+### Dismissing
 
-Conform to `ClosableRouter` to get a `close()` method that works for both push and modal contexts:
-
-```swift
-final class DetailRouter: PushRouter<DetailView>, ClosableRouter {
-    // close() pops from the navigation stack
-}
-
-final class SheetRouter: ModalRouter<SheetView>, ClosableRouter {
-    // close() dismisses the modal
-}
-```
-
-### Alerts
-
-Present data-driven alerts through `AlertState`:
+Call `requestClose()` on any router to dismiss it. It works for both push and modal contexts:
 
 ```swift
-func showAlert() {
-    presentAlert(
-        title: "Delete Item?",
-        message: "This action cannot be undone.",
-        actions: [
-            .init(title: "Cancel", role: .cancel),
-            .init(title: "Delete", role: .destructive) {
-                self.deleteItem()
-            }
-        ]
-    )
-}
+// From a push router — pops from the navigation stack
+model.router?.requestClose()
+
+// From a modal router — dismisses the modal
+model.router?.requestClose()
 ```
 
 ### Tab Bar
@@ -318,6 +301,56 @@ final class MyPushSwitch: AnyPushSwitchRouter {
         current = (current === screenA) ? screenB : screenA
     }
 }
+```
+
+### Window Router
+
+Use `WindowRouter` to manage app-level overlays (alerts, toasts) in separate `UIWindow` layers:
+
+```swift
+final class AppWindowRouter: WindowRouter<AppWindowModel> {
+    init() {
+        let appRouter = MainTabRouter()
+        super.init(current: appRouter)
+    }
+
+    override func makeModel() -> AppWindowModel {
+        AppWindowModel(router: self)
+    }
+}
+```
+
+Present window-level children:
+
+```swift
+func showToast() {
+    guard let router else { return }
+    let toastRouter = ToastRouter(windowRouter: router)
+    router.addChild(toastRouter)
+}
+```
+
+### Result Routers
+
+Use `ResultModalRouter` or `ResultPushRouter` when a screen needs to return a typed result to its caller:
+
+```swift
+final class ColorPickerRouter: ResultModalRouter<ColorPickerView, Color> {
+    init() {
+        super.init(transition: .sheet)
+    }
+
+    override func makeModel() -> ColorPickerModel {
+        ColorPickerModel(router: self)
+    }
+}
+
+// Present and handle the result
+let picker = ColorPickerRouter()
+picker.onResult = { color in
+    self.selectedColor = color
+}
+stack?.presented = picker
 ```
 
 ## UIKit Support
@@ -421,7 +454,6 @@ In `DEBUG` builds, Moviro automatically logs router and model lifecycle events:
 ```
 Sources/
 ├── AnyTypes/              # Base observable classes (type-erased layer)
-│   ├── AlertState.swift
 │   ├── AnyModel.swift
 │   ├── AnyRouter.swift
 │   ├── AnyModalRouter.swift
@@ -430,30 +462,28 @@ Sources/
 │   ├── AnyPushRouter.swift
 │   ├── AnyPushSwitchRouter.swift
 │   ├── AnySplitRouter.swift
-│   └── AnyTabBarRouter.swift
+│   ├── AnyTabBarRouter.swift
+│   └── AnyWindowRouter.swift
 ├── BaseTypes/             # Concrete types you subclass
 │   ├── BaseView.swift
-│   ├── ClosableRouter.swift
 │   ├── Model.swift
 │   ├── ModelComposer.swift
 │   ├── ModalPreviewRouter.swift
 │   ├── ModalRouter.swift
-│   └── PushRouter.swift
+│   ├── PushRouter.swift
+│   ├── ResultModalRouter.swift
+│   ├── ResultPushRouter.swift
+│   └── WindowRouter.swift
 ├── UIKitSupport/          # UIKit bridging
 │   ├── CollectionSupplementaryView.swift
 │   ├── CollectionViewCell.swift
 │   ├── CollectionViewController.swift
 │   ├── UIKitContent.swift
 │   └── ViewController.swift
-├── Sample/                # Working sample app
-│   ├── SampleAppRouter.swift
-│   ├── Home/
-│   ├── Detail/
-│   ├── Modals/
-│   ├── Split/
-│   └── Switch/
 └── Export.swift
 ```
+
+> A full working sample app is available in the [Moviro Sample](https://github.com/ylapps/MoViRo-Sample) repository.
 
 ## License
 
