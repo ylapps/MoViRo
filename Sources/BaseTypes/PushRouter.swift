@@ -7,28 +7,9 @@
 
 import SwiftUI
 
-open class PushRouter<ViewType: BaseView>: AnyPushRouter {
-
-    // MARK: State
-
-    public private(set) lazy var model = makeModel()
-
-    // MARK: Initialization
-
-    public override init(pushed: AnyPushRouter? = nil) {
-        super.init(pushed: pushed)
-    }
-
-    // MARK: Makers
-
-    open func makeModel() -> ViewType.Model {
-        fatalError("Should be overriden")
-    }
-
-    final override func makeContentView() -> AnyView {
-        .init(ViewType.with(model))
-    }
-}
+/// A push router that carries no typed closing result.
+/// This is the standard base class for push-based screen routers.
+public typealias PushRouter<ViewType: BaseView> = ResultPushRouter<ViewType, Void>
 
 public typealias NavigationStackRouter = AnyNavigationStackRouter
 public typealias TabBarRouter = AnyTabBarRouter

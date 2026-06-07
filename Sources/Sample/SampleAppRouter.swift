@@ -62,10 +62,6 @@ struct SampleRootScene: Scene {
     }
 }
 
-#Preview("Sample App") {
-    SampleRootView()
-}
-
 #Preview("Sample App (Window Router)") {
     SampleWindowRouter().makeView()
 }

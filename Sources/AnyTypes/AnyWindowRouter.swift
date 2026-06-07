@@ -37,6 +37,22 @@ import UIKit
 @MainActor
 open class AnyWindowRouter: Identifiable {
 
+    public struct ChildConfig: Sendable {
+        public var level: UIWindow.Level
+        public var backgroundColor: UIColor
+        public var frameResolver: (@Sendable (_ maxFrame: CGRect) -> CGRect)?
+
+        public init(
+            level: UIWindow.Level = .alert,
+            backgroundColor: UIColor = .clear,
+            frameResolver: (@Sendable (_ maxFrame: CGRect) -> CGRect)? = nil
+        ) {
+            self.level = level
+            self.backgroundColor = backgroundColor
+            self.frameResolver = frameResolver
+        }
+    }
+
     // MARK: <Identifiable>
 
     public let id = UUID()
@@ -53,17 +69,9 @@ open class AnyWindowRouter: Identifiable {
     @ObservationIgnored
     private var windows: [UUID: UIWindow] = [:]
 
-    /// Window levels keyed by router id.
+    /// Child configurations keyed by router id.
     @ObservationIgnored
-    private var levels: [UUID: UIWindow.Level] = [:]
-
-    /// Background colors keyed by router id (stored for deferred presentation).
-    @ObservationIgnored
-    private var backgroundColors: [UUID: UIColor] = [:]
-
-    /// Custom window frames keyed by router id. When `nil`, the window is full-screen.
-    @ObservationIgnored
-    private var frames: [UUID: CGRect] = [:]
+    private var configs: [UUID: ChildConfig] = [:]
 
     /// The window scene captured from the view hierarchy.
     @ObservationIgnored
@@ -87,22 +95,14 @@ open class AnyWindowRouter: Identifiable {
     ///
     /// - Parameters:
     ///   - child: The router whose view will be shown in the new window.
-    ///   - level: The `UIWindow.Level` for the new window. Defaults to `.alert`.
-    ///   - backgroundColor: Background color of the hosting view. Use `.clear` for transparent overlays.
-    ///   - frame: Optional custom frame for the window. When `nil` (default), the window
-    ///     is full-screen. Use a compact frame for toasts/banners so that touches outside
-    ///     the frame naturally pass through to windows below.
+    ///   - config: Configuration for the child window (level, background color, frame).
     open func addChild(
         _ child: AnyModalRouter,
-        level: UIWindow.Level = .alert,
-        backgroundColor: UIColor = .clear,
-        frame: CGRect? = nil
+        config: ChildConfig = ChildConfig()
     ) {
         guard !children.contains(where: { $0.id == child.id }) else { return }
         children.append(child)
-        levels[child.id] = level
-        backgroundColors[child.id] = backgroundColor
-        frames[child.id] = frame
+        configs[child.id] = config
 
         guard let scene = windowScene else { return }
         presentWindow(for: child, in: scene)
@@ -112,9 +112,7 @@ open class AnyWindowRouter: Identifiable {
     open func removeChild(_ child: AnyModalRouter) {
         dismissWindow(for: child)
         children.removeAll { $0.id == child.id }
-        levels[child.id] = nil
-        backgroundColors[child.id] = nil
-        frames[child.id] = nil
+        configs[child.id] = nil
     }
 
     /// Removes all child windows.
@@ -123,9 +121,7 @@ open class AnyWindowRouter: Identifiable {
             dismissWindow(for: child)
         }
         children.removeAll()
-        levels.removeAll()
-        backgroundColors.removeAll()
-        frames.removeAll()
+        configs.removeAll()
     }
 
     // MARK: Makers
@@ -154,16 +150,18 @@ open class AnyWindowRouter: Identifiable {
         for child: AnyModalRouter,
         in scene: UIWindowScene
     ) {
+        let config = configs[child.id] ?? ChildConfig()
+
         let hosting = UIHostingController(rootView: child.makeView())
-        hosting.view.backgroundColor = backgroundColors[child.id] ?? .clear
+        hosting.view.backgroundColor = config.backgroundColor
 
         let window = PassthroughWindow(windowScene: scene)
-        window.windowLevel = levels[child.id] ?? .alert
+        window.windowLevel = config.level
         window.backgroundColor = .clear
         window.rootViewController = hosting
 
-        if let frame = frames[child.id] {
-            window.frame = frame
+        if let frameResolver = config.frameResolver {
+            window.frame = frameResolver(scene.screen.bounds)
             window.isPassthroughEnabled = false
         }
 
@@ -273,3 +271,6 @@ private extension UIView {
         return false
     }
 }
+
+// AnyWindowRouter
+// WindowRouter<Model>: AnyWindowRouter

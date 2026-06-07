@@ -6,83 +6,83 @@
 @testable import Moviro
 import Testing
 
-@Suite("ClosableRouter")
+@Suite("RequestClose")
 @MainActor
 struct ClosableRouterTests {
 
-    @Test func closeModalRouter() {
+    @Test func requestCloseModalRouter() {
         let parent = StubModalRouter(transition: .sheet)
-        let child = ClosableModalRouter(transition: .sheet)
+        let child = StubVoidResultModalRouter()
         parent.presented = child
-        child.close()
+        child.requestClose()
         #expect(parent.presented == nil)
     }
 
-    @Test func closeModalRouterWhenNoPresenting() {
-        let child = ClosableModalRouter(transition: .sheet)
-        // No presenting — close() is a no-op (nil?.presented = nil)
-        child.close()
+    @Test func requestCloseModalRouterWhenNoPresenting() {
+        let child = StubVoidResultModalRouter()
+        // No presenting — requestClose() is a no-op (nil?.presented = nil)
+        child.requestClose()
         #expect(child.presenting == nil)
     }
 
-    @Test func closePushRouter() {
+    @Test func requestClosePushRouter() {
         let a = StubPushRouter()
-        let b = ClosablePushRouter()
+        let b = StubVoidResultPushRouter()
         a.pushed = b
-        b.close()
+        b.requestClose()
         #expect(a.pushed == nil)
     }
 
-    @Test func closePushRouterWhenRoot() {
+    @Test func requestClosePushRouterWhenRoot() {
         // Root push router inside a nav stack that is presented modally.
-        // close() should dismiss the modal.
+        // requestClose() should dismiss the modal.
         let presenter = StubModalRouter(transition: .sheet)
-        let root = ClosablePushRouter()
+        let root = StubVoidResultPushRouter()
         let navStack = AnyNavigationStackRouter(root: root, transition: .sheet)
         presenter.presented = navStack
-        root.close()
+        root.requestClose()
         #expect(presenter.presented == nil)
     }
 
-    @Test func closePushRouterWhenRootAndNoStack() {
-        let root = ClosablePushRouter()
-        // No stack, no pushing — close() is a no-op
-        root.close()
+    @Test func requestClosePushRouterWhenRootAndNoStack() {
+        let root = StubVoidResultPushRouter()
+        // No stack, no pushing — requestClose() is a no-op
+        root.requestClose()
         #expect(root.pushing == nil)
         #expect(root.stack == nil)
     }
 
-    @Test func closeMiddleOfPushChain() {
+    @Test func requestCloseMiddleOfPushChain() {
         let a = StubPushRouter()
-        let b = ClosablePushRouter()
+        let b = StubVoidResultPushRouter()
         let c = StubPushRouter()
         a.pushed = b
         b.pushed = c
-        b.close()
+        b.requestClose()
         #expect(a.pushed == nil)
         // C remains as b's pushed — b is just detached from a
         #expect(b.pushed === c)
     }
 
-    @Test func closePushRouterWhenRootDismissesNavStack() {
+    @Test func requestClosePushRouterWhenRootDismissesNavStack() {
         // Root push router inside a nav stack with a deep push chain.
         // Closing root should dismiss the entire nav stack modal.
         let presenter = StubModalRouter(transition: .sheet)
-        let root = ClosablePushRouter()
+        let root = StubVoidResultPushRouter()
         let b = StubPushRouter()
         root.pushed = b
         let navStack = AnyNavigationStackRouter(root: root, transition: .sheet)
         presenter.presented = navStack
-        root.close()
+        root.requestClose()
         #expect(presenter.presented == nil)
     }
 
-    @Test func closeModalRouterBreaksBackReference() {
+    @Test func requestCloseModalRouterBreaksBackReference() {
         let parent = StubModalRouter(transition: .sheet)
-        let child = ClosableModalRouter(transition: .sheet)
+        let child = StubVoidResultModalRouter()
         parent.presented = child
         #expect(child.presenting === parent)
-        child.close()
+        child.requestClose()
         #expect(child.presenting == nil)
         #expect(parent.presented == nil)
     }

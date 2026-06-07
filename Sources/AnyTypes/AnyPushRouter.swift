@@ -55,7 +55,6 @@ private struct AnyPushView: View {
 
     var body: some View {
         router.makeContentView()
-            .routerAlert($router.alert)
             .navigationDestination(item: $router.pushed) { pushed in
                 pushed.makeView()
                     .fixedSplitNavigation(pushed: pushed)

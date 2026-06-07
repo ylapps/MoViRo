@@ -31,8 +31,8 @@ final class PopoverModel: Model<PopoverRouter> {}
 
 // MARK: - Router
 
-/// Modal router using `.popover` transition. Conforms to `ClosableRouter`.
-final class PopoverRouter: ModalRouter<PopoverView>, ClosableRouter {
+/// Modal router using `.popover` transition.
+final class PopoverRouter: ModalRouter<PopoverView> {
 
     init(
         attachmentAnchor: PopoverAttachmentAnchor = .point(.center),

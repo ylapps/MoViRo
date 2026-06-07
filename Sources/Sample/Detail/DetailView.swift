@@ -8,7 +8,7 @@ import SwiftUI
 // MARK: - View
 
 /// A pushed detail screen. Demonstrates presenting modals from a pushed context
-/// and using `ClosableRouter` to pop back.
+/// and using `requestClose()` to pop back.
 struct DetailView: BaseView {
 
     @State var model: DetailModel
@@ -31,21 +31,9 @@ struct DetailView: BaseView {
                 }
             }
 
-            Section("Alert") {
-                Button("Show Alert") {
-                    model.router?.showAlert()
-                }
-                Button("Alert → then Sheet") {
-                    model.router?.showAlertThenSheet()
-                }
-                Button("Sheet → then Alert") {
-                    model.router?.showSheetThenAlert()
-                }
-            }
-
             Section {
                 Button("Close (Pop)", role: .destructive) {
-                    model.router?.close()
+                    model.router?.requestClose()
                 }
             }
         }

@@ -93,7 +93,7 @@ final class PushSwitchContentRouter: PushRouter<PushSwitchContentView> {
 
 /// Demonstrates `AnyPushSwitchRouter` — dynamically swaps between two push content routers
 /// within a navigation stack.
-final class SamplePushSwitchRouter: AnyPushSwitchRouter, ClosableRouter {
+final class SamplePushSwitchRouter: AnyPushSwitchRouter {
 
     private let contentA: PushSwitchContentRouter
     private let contentB: PushSwitchContentRouter

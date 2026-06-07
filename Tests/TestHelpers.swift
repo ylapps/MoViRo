@@ -20,16 +20,33 @@ final class StubPushRouter: AnyPushRouter {
     }
 }
 
-final class ClosableModalRouter: AnyModalRouter, ClosableRouter {
-    override func makeContentView() -> AnyView {
-        AnyView(EmptyView())
-    }
+// MARK: - Result Router Stubs
+
+struct StubResultView: BaseView {
+    @State var model: StubResultModel
+    init(model: StubResultModel) { self.model = model }
+    var body: some View { EmptyView() }
 }
 
-final class ClosablePushRouter: AnyPushRouter, ClosableRouter {
-    override func makeContentView() -> AnyView {
-        AnyView(EmptyView())
-    }
+@Observable
+final class StubResultModel: Model<Never> {}
+
+final class StubResultPushRouter: ResultPushRouter<StubResultView, String> {
+    override func makeModel() -> StubResultModel { StubResultModel() }
+}
+
+final class StubVoidResultPushRouter: ResultPushRouter<StubResultView, Void> {
+    override func makeModel() -> StubResultModel { StubResultModel() }
+}
+
+final class StubResultModalRouter: ResultModalRouter<StubResultView, Int> {
+    init() { super.init(transition: .sheet) }
+    override func makeModel() -> StubResultModel { StubResultModel() }
+}
+
+final class StubVoidResultModalRouter: ResultModalRouter<StubResultView, Void> {
+    init() { super.init(transition: .sheet) }
+    override func makeModel() -> StubResultModel { StubResultModel() }
 }
 
 // MARK: - Spy Model

@@ -29,7 +29,7 @@ struct FullScreenView: BaseView {
                 .foregroundStyle(.secondary)
 
             Button("Dismiss") {
-                model.router?.close()
+                model.router?.requestClose()
             }
             .buttonStyle(.borderedProminent)
         }

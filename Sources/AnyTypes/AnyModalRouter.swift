@@ -122,7 +122,6 @@ struct AnyModalView: View {
         Group {
             if isReadyToPresent {
                 router.makeContentView()
-                    .routerAlert($router.alert)
                     .sheet(
                         item: $router.sheet,
                         content: { $0.makeView() }

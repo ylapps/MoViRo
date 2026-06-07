@@ -7,19 +7,6 @@
 
 import SwiftUI
 
-open class ModalRouter<ViewType: BaseView>: AnyModalRouter {
-
-    // MARK: State
-
-    public private(set) lazy var model = makeModel()
-
-    // MARK: Makers
-
-    open func makeModel() -> ViewType.Model {
-        fatalError("Should be overriden")
-    }
-
-    override func makeContentView() -> AnyView {
-        .init(ViewType.with(model))
-    }
-}
+/// A modal router that carries no typed closing result.
+/// This is the standard base class for modal screen routers.
+public typealias ModalRouter<ViewType: BaseView> = ResultModalRouter<ViewType, Void>

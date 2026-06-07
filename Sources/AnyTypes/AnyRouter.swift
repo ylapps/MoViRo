@@ -15,11 +15,6 @@ open class AnyRouter: Identifiable {
 
     public let id = UUID()
 
-    // MARK: Alert
-
-    /// Set to a non-nil value to present an alert on this router's view.
-    public var alert: AlertState?
-
     // MARK: Initialization
 
     init() {
@@ -31,22 +26,6 @@ open class AnyRouter: Identifiable {
         #if DEBUG
         print("☠️ [ROUTER] \(Self.self) deinit")
         #endif
-    }
-
-    // MARK: Alert Convenience
-
-    /// Presents an alert with the given title, optional message, and actions.
-    public func presentAlert(
-        title: LocalizedStringKey,
-        message: LocalizedStringKey? = nil,
-        actions: [AlertState.Action] = []
-    ) {
-        alert = AlertState(title: title, message: message, actions: actions)
-    }
-
-    /// Dismisses the currently presented alert.
-    public func dismissAlert() {
-        alert = nil
     }
 
     // MARK: Makers

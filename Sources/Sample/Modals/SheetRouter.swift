@@ -31,8 +31,8 @@ final class SheetModel: Model<SheetRouter> {}
 
 // MARK: - Router
 
-/// Modal router using `.sheet` transition. Conforms to `ClosableRouter`.
-final class SheetRouter: ModalRouter<SheetView>, ClosableRouter {
+/// Modal router using `.sheet` transition.
+final class SheetRouter: ModalRouter<SheetView> {
 
     init() {
         super.init(transition: .sheet)

@@ -26,7 +26,7 @@ struct PopoverView: BaseView {
                 .font(.caption)
 
             Button("Dismiss") {
-                model.router?.close()
+                model.router?.requestClose()
             }
             .buttonStyle(.bordered)
         }

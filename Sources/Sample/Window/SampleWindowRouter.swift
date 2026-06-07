@@ -9,62 +9,50 @@ import SwiftUI
 
 @MainActor
 protocol WindowAlertRoutable: AnyObject {
-    var windowRouter: SampleWindowRouter? { get }
+    var windowModel: SampleWindowModel? { get }
     func showWindowAlert()
 }
 
 extension WindowAlertRoutable {
     func showWindowAlert() {
-        windowRouter?.showWindowAlert()
+        windowModel?.showWindowAlert()
     }
 }
 
 @MainActor
 protocol WindowToastRoutable: AnyObject {
-    var windowRouter: SampleWindowRouter? { get }
+    var windowModel: SampleWindowModel? { get }
     func showWindowToast()
 }
 
 extension WindowToastRoutable {
     func showWindowToast() {
-        windowRouter?.showWindowToast()
+        windowModel?.showWindowToast()
     }
 }
 
 // MARK: - Router
 
-/// Sample window router demonstrating `AnyWindowRouter`.
-/// Uses `SampleAppRouter` as the main window content and provides methods
-/// to show alerts and toasts in separate `UIWindow` layers.
-final class SampleWindowRouter: AnyWindowRouter {
+/// Sample window router demonstrating `WindowRouter`.
+/// Uses `SampleAppRouter` as the main window content.
+/// Window-level orchestration (alerts, toasts) lives in `SampleWindowModel`.
+final class SampleWindowRouter: WindowRouter<SampleWindowModel> {
 
     init() {
         let appRouter = SampleAppRouter()
         super.init(current: appRouter)
-        appRouter.homeStack.homeRouter.windowRouter = self
+        appRouter.homeStack.homeRouter.windowModel = model
     }
 
-    // MARK: Window Navigation
-
-    /// Shows an alert in a separate UIWindow (independent of any modal presentation).
-    func showWindowAlert() {
-        let alertRouter = WindowAlertRouter(windowRouter: self)
-        addChild(alertRouter, level: .alert, backgroundColor: .clear)
-    }
-
-    /// Shows a toast banner in a separate UIWindow overlay.
-    func showWindowToast() {
-        let toastRouter = WindowToastRouter(windowRouter: self)
-        let screen = windowScene?.screen.bounds ?? UIScreen.main.bounds
-        let toastFrame = CGRect(x: 0, y: 0, width: screen.width, height: 120)
-        addChild(toastRouter, level: .alert + 1, backgroundColor: .clear, frame: toastFrame)
+    override func makeModel() -> SampleWindowModel {
+        SampleWindowModel(router: self)
     }
 }
 
 // MARK: - Window Alert
 
 /// A simple modal router that renders an alert-style card in its own `UIWindow`.
-private final class WindowAlertRouter: AnyModalRouter {
+final class WindowAlertRouter: AnyModalRouter {
 
     @ObservationIgnored
     weak var windowRouter: SampleWindowRouter?
@@ -79,36 +67,50 @@ private final class WindowAlertRouter: AnyModalRouter {
     }
 }
 
-private struct WindowAlertView: View {
+struct WindowAlertView: View {
 
     let router: WindowAlertRouter
+    @State private var isVisible = false
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
-                .ignoresSafeArea()
+            if isVisible {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
 
-            VStack(spacing: 16) {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 36))
-                    .foregroundStyle(.orange)
+                VStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 36))
+                        .foregroundStyle(.orange)
 
-                Text("Window Alert")
-                    .font(.headline)
+                    Text("Window Alert")
+                        .font(.headline)
 
-                Text("This alert is displayed in a separate UIWindow, independent of any modal presentation.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    Text("This alert is displayed in a separate UIWindow, independent of any modal presentation.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
 
-                Button("Dismiss") {
-                    router.windowRouter?.removeChild(router)
+                    Button("Dismiss") {
+                        dismiss()
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
-                .buttonStyle(.borderedProminent)
+                .padding(24)
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 32))
+                .padding(32)
+                .transition(.asymmetric(insertion: .scale(scale: 0.9).combined(with: .opacity), removal: .opacity))
             }
-            .padding(24)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-            .padding(32)
+        }
+        .animation(.bouncy(duration: 0.3), value: isVisible)
+        .onAppear { isVisible = true }
+    }
+
+    private func dismiss() {
+        isVisible = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak router] in
+            guard let router else { return }
+            router.windowRouter?.removeChild(router)
         }
     }
 }
@@ -116,7 +118,7 @@ private struct WindowAlertView: View {
 // MARK: - Window Toast
 
 /// A simple modal router that renders a toast banner in its own `UIWindow`.
-private final class WindowToastRouter: AnyModalRouter {
+final class WindowToastRouter: AnyModalRouter {
 
     @ObservationIgnored
     weak var windowRouter: SampleWindowRouter?
@@ -131,7 +133,7 @@ private final class WindowToastRouter: AnyModalRouter {
     }
 }
 
-private struct WindowToastView: View {
+struct WindowToastView: View {
 
     let router: WindowToastRouter
     @State private var isVisible = false

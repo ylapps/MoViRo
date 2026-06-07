@@ -23,7 +23,7 @@ protocol HomeRouterInterface:
 final class HomeRouter: PushRouter<HomeView>, HomeRouterInterface {
 
     @ObservationIgnored
-    weak var windowRouter: SampleWindowRouter?
+    weak var windowModel: SampleWindowModel?
 
     override func makeModel() -> HomeModel {
         HomeModel(router: self)

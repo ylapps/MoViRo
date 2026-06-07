@@ -91,7 +91,7 @@ final class ModalSwitchContentRouter: ModalRouter<ModalSwitchContentView> {
     let title: String
     let iconName: String
     var onToggle: (() -> Void)?
-    var onClose: (() -> Void)?
+    var onCloseAction: (() -> Void)?
 
     init(title: String, iconName: String) {
         self.title = title
@@ -102,7 +102,7 @@ final class ModalSwitchContentRouter: ModalRouter<ModalSwitchContentView> {
     override func makeModel() -> ModalSwitchContentModel {
         let model = ModalSwitchContentModel(title: title, iconName: iconName)
         model.onToggle = onToggle
-        model.onClose = onClose
+        model.onClose = onCloseAction
         return model
     }
 }
@@ -110,7 +110,7 @@ final class ModalSwitchContentRouter: ModalRouter<ModalSwitchContentView> {
 // MARK: - Sample Modal Switch Router
 
 /// Demonstrates `AnyModalSwitchRouter` — dynamically swaps between two modal content routers.
-final class SampleModalSwitchRouter: AnyModalSwitchRouter, ClosableRouter {
+final class SampleModalSwitchRouter: AnyModalSwitchRouter {
 
     private let contentA: ModalSwitchContentRouter
     private let contentB: ModalSwitchContentRouter
@@ -123,8 +123,8 @@ final class SampleModalSwitchRouter: AnyModalSwitchRouter, ClosableRouter {
 
         contentA.onToggle = { [weak self] in self?.toggleContent() }
         contentB.onToggle = { [weak self] in self?.toggleContent() }
-        contentA.onClose = { [weak self] in self?.close() }
-        contentB.onClose = { [weak self] in self?.close() }
+        contentA.onCloseAction = { [weak self] in self?.presenting?.presented = nil }
+        contentB.onCloseAction = { [weak self] in self?.presenting?.presented = nil }
     }
 
     func toggleContent() {
