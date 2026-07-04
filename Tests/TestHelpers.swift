@@ -32,20 +32,22 @@ struct StubResultView: BaseView {
 final class StubResultModel: Model<Never> {}
 
 final class StubResultPushRouter: ResultPushRouter<StubResultView, String> {
+    override init(onClose: ((String) -> Void)? = nil) { super.init(onClose: onClose) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 
 final class StubVoidResultPushRouter: ResultPushRouter<StubResultView, Void> {
+    override init(onClose: (() -> Void)? = nil) { super.init(onClose: onClose) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 
 final class StubResultModalRouter: ResultModalRouter<StubResultView, Int> {
-    init() { super.init(transition: .sheet) }
+    init(onClose: ((Int) -> Void)? = nil) { super.init(transition: .sheet, onClose: onClose) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 
 final class StubVoidResultModalRouter: ResultModalRouter<StubResultView, Void> {
-    init() { super.init(transition: .sheet) }
+    init(onClose: (() -> Void)? = nil) { super.init(transition: .sheet, onClose: onClose) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 

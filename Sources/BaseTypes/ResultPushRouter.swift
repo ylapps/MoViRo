@@ -11,17 +11,33 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
 
     // MARK: State
 
+    @ObservationIgnored
     public private(set) lazy var model = makeModel()
+
+    @ObservationIgnored
+    public var presented: AnyModalRouter? {
+        get { stack?.presented }
+        set { stack?.presented = newValue }
+    }
 
     /// Called with the result value just before the router closes.
     /// Set by the presenting router when creating this router.
-    @ObservationIgnored
-    public var onClose: ((ClosingResult) -> Void)?
+    private let onClose: ((ClosingResult) -> Void)?
 
     // MARK: Initialization
 
-    public override init(pushed: AnyPushRouter? = nil) {
-        super.init(pushed: pushed)
+    public init(onClose: ((ClosingResult) -> Void)? = nil) {
+        self.onClose = onClose
+        super.init()
+    }
+
+    public init(onClose: (() -> Void)? = nil) where ClosingResult == Void {
+        self.onClose = if let onClose {
+            { _ in onClose() }
+        } else {
+            nil
+        }
+        super.init()
     }
 
     // MARK: Result Closing
@@ -39,6 +55,11 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
         }
     }
 
+    /// Delivers the result to `onClose` if set; otherwise dismisses this router.
+    public func requestClose() where ClosingResult == Void {
+        requestClose(with: ())
+    }
+
     // MARK: Makers
 
     open func makeModel() -> ViewType.Model {
@@ -47,14 +68,5 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
 
     final override func makeContentView() -> AnyView {
         .init(ViewType.with(model))
-    }
-}
-
-// MARK: - Void Convenience
-
-public extension ResultPushRouter where ClosingResult == Void {
-
-    func requestClose() {
-        requestClose(with: ())
     }
 }

@@ -14,9 +14,9 @@ open class AnyNavigationStackRouter: AnyModalRouter {
 
     public var root: AnyPushRouter
 
-    public init(root: AnyPushRouter, transition: Transition, presented: AnyModalRouter? = nil) {
+    public init(root: AnyPushRouter, transition: Transition) {
         self.root = root
-        super.init(transition: transition, presented: presented)
+        super.init(transition: transition)
         root.updateStack(with: self)
     }
 

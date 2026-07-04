@@ -15,12 +15,12 @@ struct AnyPushRouterTests {
         #expect(router.pushed == nil)
         #expect(router.pushing == nil)
         #expect(router.stack == nil)
-        #expect(router.split == nil)
     }
 
-    @Test func initWithPushed() {
+    @Test func settingPushedAfterInit() {
+        let a = StubPushRouter()
         let b = StubPushRouter()
-        let a = StubPushRouter(pushed: b)
+        a.pushed = b
         #expect(a.pushed === b)
         #expect(b.pushing === a)
     }
@@ -100,18 +100,6 @@ struct AnyPushRouterTests {
         root.pushed = nil
         #expect(b.stack == nil)
         #expect(c.stack == nil)
-    }
-
-    @Test func splitReturnsNilWhenStackIsNotSplit() {
-        let root = StubPushRouter()
-        let _ = AnyNavigationStackRouter(root: root, transition: .sheet)
-        #expect(root.split == nil)
-    }
-
-    @Test func splitReturnsRouterWhenStackIsSplit() {
-        let root = StubPushRouter()
-        let splitRouter = AnySplitRouter(root: root)
-        #expect(root.split === splitRouter)
     }
 
     @Test func deepChainStackDetachCascades() {

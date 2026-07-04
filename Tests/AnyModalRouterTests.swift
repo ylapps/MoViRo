@@ -17,9 +17,10 @@ struct AnyModalRouterTests {
         #expect(router.transition == .sheet)
     }
 
-    @Test func initWithPresented() {
+    @Test func settingPresentedAtInit() {
         let child = StubModalRouter(transition: .sheet)
-        let parent = StubModalRouter(transition: .fullScreen, presented: child)
+        let parent = StubModalRouter(transition: .fullScreen)
+        parent.presented = child
         #expect(parent.presented === child)
         #expect(child.presenting === parent)
     }

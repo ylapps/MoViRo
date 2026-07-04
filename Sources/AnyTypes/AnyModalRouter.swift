@@ -19,7 +19,7 @@ open class AnyModalRouter: AnyRouter {
     
     /// Router which presents this router.
     @ObservationIgnored
-    public internal(set) weak var presenting: AnyModalRouter?
+    weak var presenting: AnyModalRouter?
 
     /// Router presented from this router.
     public var presented: AnyModalRouter? {
@@ -31,11 +31,9 @@ open class AnyModalRouter: AnyRouter {
 
     // MARK: Initialization
 
-    public init(transition: Transition, presented: AnyModalRouter? = nil) {
+    init(transition: Transition) {
         self.transition = transition
-        self._presented = presented
         super.init()
-        presented?.presenting = self
     }
 
     // MARK: Makers
@@ -119,27 +117,25 @@ struct AnyModalView: View {
     @State private var isReadyToPresent = false
 
     var body: some View {
-        Group {
-            if isReadyToPresent {
-                router.makeContentView()
-                    .sheet(
-                        item: $router.sheet,
-                        content: { $0.makeView() }
-                    )
-                    .fullScreenCover(
-                        item: $router.fullScreen,
-                        content: { $0.makeView() }
-                    )
-                    .popover(
-                        item: $router.popover,
-                        attachmentAnchor: router.popover?.transition.popoverAttachmentAnchor ?? .rect(.bounds),
-                        arrowEdge: router.popover?.transition.popoverArrowEdge,
-                        content: { $0.makeView() }
-                    )
-            } else {
-                router.makeContentView()
-            }
+        if isReadyToPresent {
+            router.makeContentView()
+                .sheet(
+                    item: $router.sheet,
+                    content: { $0.makeView() }
+                )
+                .fullScreenCover(
+                    item: $router.fullScreen,
+                    content: { $0.makeView() }
+                )
+                .popover(
+                    item: $router.popover,
+                    attachmentAnchor: router.popover?.transition.popoverAttachmentAnchor ?? .rect(.bounds),
+                    arrowEdge: router.popover?.transition.popoverArrowEdge,
+                    content: { $0.makeView() }
+                )
+        } else {
+            router.makeContentView()
+                .onAppear { isReadyToPresent = true }
         }
-        .onAppear { isReadyToPresent = true }
     }
 }

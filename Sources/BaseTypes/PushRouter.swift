@@ -12,4 +12,3 @@ import SwiftUI
 public typealias PushRouter<ViewType: BaseView> = ResultPushRouter<ViewType, Void>
 
 public typealias NavigationStackRouter = AnyNavigationStackRouter
-public typealias TabBarRouter = AnyTabBarRouter

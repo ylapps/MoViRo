@@ -37,7 +37,8 @@ struct AnyNavigationStackRouterTests {
     @Test func presentedOnNavStackInheritsModalChain() {
         let root = StubPushRouter()
         let child = StubModalRouter(transition: .sheet)
-        let navStack = AnyNavigationStackRouter(root: root, transition: .fullScreen, presented: child)
+        let navStack = AnyNavigationStackRouter(root: root, transition: .fullScreen)
+        navStack.presented = child
         #expect(navStack.presented === child)
         #expect(child.presenting === navStack)
     }
@@ -50,10 +51,11 @@ struct AnyNavigationStackRouterTests {
         #expect(presented.presenting === navStack)
     }
 
-    @Test func initWithPresented() {
+    @Test func settingPresentedAfterInit() {
         let root = StubPushRouter()
         let child = StubModalRouter(transition: .sheet)
-        let navStack = AnyNavigationStackRouter(root: root, transition: .fullScreen, presented: child)
+        let navStack = AnyNavigationStackRouter(root: root, transition: .fullScreen)
+        navStack.presented = child
         #expect(child.presenting === navStack)
         #expect(navStack.presented === child)
     }

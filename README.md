@@ -2,7 +2,7 @@
 
 **Model-View-Router** design pattern for iOS.
 
-Moviro is a lightweight Swift framework that brings a clean, router-driven architecture to SwiftUI (and UIKit) apps. It separates navigation logic from views and business logic, giving you a composable tree of routers that own the entire navigation state.
+Moviro is a lightweight Swift framework that brings a clean, router-driven architecture to SwiftUI apps. It separates navigation logic from views and business logic, giving you a composable tree of routers that own the entire navigation state.
 
 ## Requirements
 
@@ -59,12 +59,9 @@ The **Router** owns the **Model**, the **Model** holds a weak reference back to 
 AnyRouter                        Base class for all routers
 ├── AnyModalRouter               Presents modals (sheet / fullScreen / popover)
 │   ├── AnyNavigationStackRouter Wraps a push-based flow in NavigationStack
-│   │   └── AnySplitRouter       Two-column NavigationSplitView
-│   ├── AnyTabBarRouter          UITabBarController-style tabs
 │   └── AnyModalSwitchRouter     Swap modal content without dismissing
 ├── AnyPushRouter                Push navigation via navigationDestination
 │   └── AnyPushSwitchRouter      Swap pushed content in-place
-└── AnyWindowRouter              App-level UIWindow management (overlays)
 ```
 
 ### Concrete Types (you subclass these)
@@ -74,8 +71,6 @@ AnyRouter                        Base class for all routers
 | `PushRouter<V>` | A screen inside a navigation stack |
 | `ModalRouter<V>` | A screen presented as a modal |
 | `NavigationStackRouter` | Wrapping a push flow in `NavigationStack` |
-| `TabBarRouter` | Tab-based root navigation |
-| `WindowRouter<M>` | App-level window management (alerts, toasts) |
 | `ResultModalRouter<V, R>` | Modal that returns a typed result |
 | `ResultPushRouter<V, R>` | Push screen that returns a typed result |
 
@@ -145,7 +140,7 @@ final class HomeRouter: PushRouter<HomeView> {
     }
 
     func presentSheet() {
-        stack?.presented = SheetRouter()
+        presented = SheetRouter()
     }
 }
 ```
@@ -184,11 +179,11 @@ func pushDetail() {
 
 ### Modal Presentation
 
-Present modals through the navigation stack's `presented` property. The modal transition is defined at the router level:
+Present modals through the push router's `presented` property. The modal transition is defined at the router level:
 
 ```swift
 // Sheet
-final class SheetRouter: ModalRouter<SheetView>, ClosableRouter {
+final class SheetRouter: ModalRouter<SheetView> {
     init() {
         super.init(transition: .sheet)
     }
@@ -196,7 +191,7 @@ final class SheetRouter: ModalRouter<SheetView>, ClosableRouter {
 }
 
 // Full screen
-final class FullScreenRouter: ModalRouter<FullScreenView>, ClosableRouter {
+final class FullScreenRouter: ModalRouter<FullScreenView> {
     init() {
         super.init(transition: .fullScreen)
     }
@@ -204,9 +199,9 @@ final class FullScreenRouter: ModalRouter<FullScreenView>, ClosableRouter {
 }
 
 // Popover
-final class PopoverRouter: ModalRouter<PopoverView>, ClosableRouter {
+final class PopoverRouter: ModalRouter<PopoverView> {
     init() {
-        super.init(transition: .popover)
+        super.init(transition: .popover())
     }
     // ...
 }
@@ -216,7 +211,7 @@ Present from any push router:
 
 ```swift
 func presentSheet() {
-    stack?.presented = SheetRouter()
+    presented = SheetRouter()
 }
 ```
 
@@ -232,50 +227,6 @@ model.router?.requestClose()
 model.router?.requestClose()
 ```
 
-### Tab Bar
-
-Use `TabBarRouter` (typealias for `AnyTabBarRouter`) to create tab-based navigation:
-
-```swift
-final class AppRouter: AnyTabBarRouter {
-    init() {
-        super.init(tabs: [
-            .init(
-                router: HomeNavigationStackRouter(),
-                title: "Home",
-                image: UIImage(systemName: "house")!
-            ),
-            .init(
-                router: SettingsNavigationStackRouter(),
-                title: "Settings",
-                image: UIImage(systemName: "gear")!
-            )
-        ])
-    }
-}
-```
-
-### Split View
-
-Use `AnySplitRouter` for two-column iPad layouts:
-
-```swift
-final class MySplitRouter: AnySplitRouter {
-    init() {
-        super.init(
-            style: .balanced,
-            root: SidebarRouter(),
-            transition: .fullScreen
-        )
-        defaultDetailsView = {
-            AnyView(Text("Select an item"))
-        }
-    }
-}
-```
-
-The sidebar's `pushed` property controls what appears in the detail column.
-
 ### Switch Routers
 
 Swap content without navigation transitions:
@@ -283,7 +234,7 @@ Swap content without navigation transitions:
 **Modal switch** -- replace modal content in-place:
 
 ```swift
-final class MySwitchRouter: AnyModalSwitchRouter, ClosableRouter {
+final class MySwitchRouter: AnyModalSwitchRouter {
     let screenA: ModalRouter<...>
     let screenB: ModalRouter<...>
 
@@ -303,41 +254,14 @@ final class MyPushSwitch: AnyPushSwitchRouter {
 }
 ```
 
-### Window Router
-
-Use `WindowRouter` to manage app-level overlays (alerts, toasts) in separate `UIWindow` layers:
-
-```swift
-final class AppWindowRouter: WindowRouter<AppWindowModel> {
-    init() {
-        let appRouter = MainTabRouter()
-        super.init(current: appRouter)
-    }
-
-    override func makeModel() -> AppWindowModel {
-        AppWindowModel(router: self)
-    }
-}
-```
-
-Present window-level children:
-
-```swift
-func showToast() {
-    guard let router else { return }
-    let toastRouter = ToastRouter(windowRouter: router)
-    router.addChild(toastRouter)
-}
-```
-
 ### Result Routers
 
-Use `ResultModalRouter` or `ResultPushRouter` when a screen needs to return a typed result to its caller:
+Use `ResultModalRouter` or `ResultPushRouter` when a screen needs to return a typed result to its caller. The `onClose` callback is injected at construction time:
 
 ```swift
 final class ColorPickerRouter: ResultModalRouter<ColorPickerView, Color> {
-    init() {
-        super.init(transition: .sheet)
+    init(onClose: ((Color) -> Void)? = nil) {
+        super.init(transition: .sheet, onClose: onClose)
     }
 
     override func makeModel() -> ColorPickerModel {
@@ -346,67 +270,10 @@ final class ColorPickerRouter: ResultModalRouter<ColorPickerView, Color> {
 }
 
 // Present and handle the result
-let picker = ColorPickerRouter()
-picker.onResult = { color in
+let picker = ColorPickerRouter { color in
     self.selectedColor = color
 }
 stack?.presented = picker
-```
-
-## UIKit Support
-
-Moviro includes bridging types for UIKit integration, so you can use UIKit view controllers within the router tree.
-
-### ViewController
-
-A `UIViewController` subclass conforming to `ModelHolding`, with structured lifecycle hooks:
-
-```swift
-class ProfileViewController: ViewController<ProfileModel> {
-    override func setupHierarchy() { /* add subviews */ }
-    override func setupLayout()    { /* add constraints */ }
-    override func setupViews()     { /* configure views */ }
-    override func setupBinding()   { /* bind to model */ }
-}
-```
-
-### CollectionViewController
-
-Same pattern for `UICollectionViewController`, with a customizable layout:
-
-```swift
-class ListViewController: CollectionViewController<ListModel> {
-    override func makeCollectionViewLayout() -> UICollectionViewLayout {
-        // Return your compositional layout
-    }
-}
-```
-
-### UIKitContent
-
-Bridges any `UIViewController & ModelHolding` into SwiftUI so it works as a `BaseView`:
-
-```swift
-// Use a UIKit VC anywhere a BaseView is expected
-typealias ProfileView = UIKitContent<ProfileViewController>
-
-final class ProfileRouter: PushRouter<ProfileView> {
-    override func makeModel() -> ProfileModel {
-        ProfileModel(router: self)
-    }
-}
-```
-
-### CollectionViewCell & CollectionSupplementaryView
-
-Generic `UICollectionViewCell` and `UICollectionReusableView` subclasses that render any `BaseView` via `UIHostingConfiguration`. Set the `model` property and the cell handles the rest:
-
-```swift
-class MyCell: CollectionViewCell<MyCellView> {}
-
-// In your data source:
-cell.model = cellModel
-cell.contentInsets = .init(top: 8, leading: 16, bottom: 8, trailing: 16)
 ```
 
 ## ModelComposer
@@ -460,10 +327,7 @@ Sources/
 │   ├── AnyModalSwitchRouter.swift
 │   ├── AnyNavigationStackRouter.swift
 │   ├── AnyPushRouter.swift
-│   ├── AnyPushSwitchRouter.swift
-│   ├── AnySplitRouter.swift
-│   ├── AnyTabBarRouter.swift
-│   └── AnyWindowRouter.swift
+│   └── AnyPushSwitchRouter.swift
 ├── BaseTypes/             # Concrete types you subclass
 │   ├── BaseView.swift
 │   ├── Model.swift
@@ -472,14 +336,7 @@ Sources/
 │   ├── ModalRouter.swift
 │   ├── PushRouter.swift
 │   ├── ResultModalRouter.swift
-│   ├── ResultPushRouter.swift
-│   └── WindowRouter.swift
-├── UIKitSupport/          # UIKit bridging
-│   ├── CollectionSupplementaryView.swift
-│   ├── CollectionViewCell.swift
-│   ├── CollectionViewController.swift
-│   ├── UIKitContent.swift
-│   └── ViewController.swift
+│   └── ResultPushRouter.swift
 └── Export.swift
 ```
 

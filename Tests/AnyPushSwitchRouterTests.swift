@@ -36,7 +36,8 @@ struct AnyPushSwitchRouterTests {
         let contentA = StubPushRouter()
         let contentB = StubPushRouter()
         let switchRouter = AnyPushSwitchRouter(current: contentA)
-        let root = StubPushRouter(pushed: switchRouter)
+        let root = StubPushRouter()
+        root.pushed = switchRouter
         let navStack = AnyNavigationStackRouter(root: root, transition: .sheet)
         #expect(switchRouter.stack === navStack)
         #expect(contentA.stack === navStack)
