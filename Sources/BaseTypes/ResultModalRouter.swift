@@ -25,15 +25,6 @@ open class ResultModalRouter<ViewType: BaseView, ClosingResult>: AnyModalRouter 
         super.init(transition: transition)
     }
 
-    public init(transition: Transition, onClose: (() -> Void)? = nil) where ClosingResult == Void {
-        self.onClose = if let onClose {
-            { _ in onClose() }
-        } else {
-            nil
-        }
-        super.init(transition: transition)
-    }
-
     // MARK: Result Closing
 
     /// Delivers the result to `onClose` if set; otherwise dismisses this router.

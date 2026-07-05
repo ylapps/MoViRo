@@ -14,12 +14,6 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
     @ObservationIgnored
     public private(set) lazy var model = makeModel()
 
-    @ObservationIgnored
-    public var presented: AnyModalRouter? {
-        get { stack?.presented }
-        set { stack?.presented = newValue }
-    }
-
     /// Called with the result value just before the router closes.
     /// Set by the presenting router when creating this router.
     private let onClose: ((ClosingResult) -> Void)?
@@ -28,15 +22,6 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
 
     public init(onClose: ((ClosingResult) -> Void)? = nil) {
         self.onClose = onClose
-        super.init()
-    }
-
-    public init(onClose: (() -> Void)? = nil) where ClosingResult == Void {
-        self.onClose = if let onClose {
-            { _ in onClose() }
-        } else {
-            nil
-        }
         super.init()
     }
 

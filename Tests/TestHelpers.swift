@@ -37,7 +37,7 @@ final class StubResultPushRouter: ResultPushRouter<StubResultView, String> {
 }
 
 final class StubVoidResultPushRouter: ResultPushRouter<StubResultView, Void> {
-    override init(onClose: (() -> Void)? = nil) { super.init(onClose: onClose) }
+    override init(onClose: ((()) -> Void)? = nil) { super.init(onClose: onClose) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 
@@ -47,7 +47,7 @@ final class StubResultModalRouter: ResultModalRouter<StubResultView, Int> {
 }
 
 final class StubVoidResultModalRouter: ResultModalRouter<StubResultView, Void> {
-    init(onClose: (() -> Void)? = nil) { super.init(transition: .sheet, onClose: onClose) }
+    init(onClose: ((()) -> Void)? = nil) { super.init(transition: .sheet, onClose: onClose) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 

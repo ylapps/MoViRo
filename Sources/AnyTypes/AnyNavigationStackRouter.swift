@@ -12,7 +12,12 @@ import SwiftUI
 @Observable
 open class AnyNavigationStackRouter: AnyModalRouter {
 
-    public var root: AnyPushRouter
+    public var root: AnyPushRouter {
+        willSet {
+            root.updateStack(with: nil)
+            newValue.updateStack(with: self)
+        }
+    }
 
     public init(root: AnyPushRouter, transition: Transition) {
         self.root = root

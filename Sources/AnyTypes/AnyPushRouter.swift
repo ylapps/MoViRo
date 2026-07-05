@@ -20,6 +20,12 @@ open class AnyPushRouter: AnyRouter {
         }
     }
 
+    @ObservationIgnored
+    public var presented: AnyModalRouter? {
+        get { stack?.presented }
+        set { stack?.presented = newValue }
+    }
+
     /// Router that pushed this router. Nil means self is root on navigation stack.
     @ObservationIgnored
     weak var pushing: AnyPushRouter?
