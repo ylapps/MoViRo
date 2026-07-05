@@ -43,6 +43,7 @@ extension Model: Hashable {
 // MARK: - WeakAnySemanticWrapper
 
 private struct WeakAnySemanticWrapper<T> {
+
     private weak var object: AnyObject?
     private var value: T?
 
