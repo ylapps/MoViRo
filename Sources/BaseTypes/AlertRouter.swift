@@ -17,7 +17,7 @@ public final class AlertRouter: AnyModalRouter {
 
 extension AlertRouter {
 
-    public struct Config: Sendable {
+    public struct Config {
 
         public let title: String?
         public let message: String?
@@ -33,13 +33,13 @@ extension AlertRouter {
 
 extension AlertRouter.Config {
 
-    public struct Action: Sendable, Identifiable {
+    public struct Action: Identifiable {
         public let id = UUID()
         public let title: String
         public let role: ButtonRole?
-        public let handler: @Sendable () -> Void
+        public let handler: @MainActor () -> Void
 
-        public init(title: String, role: ButtonRole? = nil, handler: @Sendable @escaping () -> Void = {}) {
+        public init(title: String, role: ButtonRole? = nil, handler: @MainActor @escaping () -> Void = {}) {
             self.title = title
             self.role = role
             self.handler = handler
