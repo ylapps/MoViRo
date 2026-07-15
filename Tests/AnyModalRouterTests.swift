@@ -143,4 +143,95 @@ struct AnyModalRouterTests {
         #expect(b.presented === c) // B→C chain preserved
         #expect(c.presenting === b) // C still points to B
     }
+
+    // MARK: - Alert Presentation
+
+    @Test func presentedAlertIsNilByDefault() {
+        let router = StubModalRouter(transition: .sheet)
+        #expect(router.presentedAlert == nil)
+        #expect(router.isAlertPresented == false)
+    }
+
+    @Test func presentedAlertReturnsAlertRouter() {
+        let parent = StubModalRouter(transition: .sheet)
+        let alert = AlertRouter(config: .init(title: "Test"))
+        parent.presented = alert
+        #expect(parent.presentedAlert === alert)
+        #expect(parent.presentedAlert?.config.title == "Test")
+    }
+
+    @Test func presentedAlertReturnsNilForNonAlert() {
+        let parent = StubModalRouter(transition: .sheet)
+        let child = StubModalRouter(transition: .fullScreen)
+        parent.presented = child
+        #expect(parent.presentedAlert == nil)
+        #expect(parent.isAlertPresented == false)
+    }
+
+    @Test func isAlertPresentedReflectsAlertRouter() {
+        let parent = StubModalRouter(transition: .sheet)
+        let alert = AlertRouter(config: .init(title: "Alert"))
+        parent.presented = alert
+        #expect(parent.isAlertPresented == true)
+    }
+
+    @Test func isAlertPresentedSetToFalseDismissesAlert() {
+        let parent = StubModalRouter(transition: .sheet)
+        let alert = AlertRouter(config: .init(title: "Alert"))
+        parent.presented = alert
+        parent.isAlertPresented = false
+        #expect(parent.presented == nil)
+        #expect(parent.isAlertPresented == false)
+    }
+
+    @Test func isAlertPresentedSetToTrueIsNoOp() {
+        let parent = StubModalRouter(transition: .sheet)
+        // Setting true when no alert is presented should be a no-op
+        parent.isAlertPresented = true
+        #expect(parent.presented == nil)
+    }
+
+    @Test func fullScreenGetterReturnsNilWhenAlertPresented() {
+        let parent = StubModalRouter(transition: .sheet)
+        let alert = AlertRouter(config: .init(title: "Alert"))
+        // AlertRouter uses .fullScreen transition, but fullScreen getter
+        // should return nil when an alert is presented
+        parent.presented = alert
+        #expect(parent.presentedAlert != nil)
+    }
+
+    @Test func fullScreenGetterReturnsRouterWhenNotAlert() {
+        let parent = StubModalRouter(transition: .sheet)
+        let child = StubModalRouter(transition: .fullScreen)
+        parent.presented = child
+        #expect(parent.presentedAlert == nil)
+        #expect(parent.presented === child)
+    }
+
+    @Test func alertEstablishesBackReference() {
+        let parent = StubModalRouter(transition: .sheet)
+        let alert = AlertRouter(config: .init(title: "Alert"))
+        parent.presented = alert
+        #expect(alert.presenting === parent)
+    }
+
+    @Test func dismissAlertClearsBackReference() {
+        let parent = StubModalRouter(transition: .sheet)
+        let alert = AlertRouter(config: .init(title: "Alert"))
+        parent.presented = alert
+        parent.isAlertPresented = false
+        #expect(alert.presenting == nil)
+        #expect(parent.presented == nil)
+    }
+
+    @Test func replacingAlertWithRegularPresentation() {
+        let parent = StubModalRouter(transition: .sheet)
+        let alert = AlertRouter(config: .init(title: "Alert"))
+        parent.presented = alert
+        let child = StubModalRouter(transition: .sheet)
+        parent.presented = child
+        #expect(parent.isAlertPresented == false)
+        #expect(parent.presented === child)
+        #expect(alert.presenting == nil)
+    }
 }

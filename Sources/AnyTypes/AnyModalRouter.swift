@@ -51,7 +51,10 @@ private extension AnyModalRouter {
     }
 
     var fullScreen: AnyModalRouter? {
-        get { presented?.transition == .fullScreen ? presented : nil }
+        get {
+            guard !isAlertPresented, presented?.transition == .fullScreen else { return nil }
+            return presented
+        }
         set { presented = newValue }
     }
 
@@ -107,6 +110,18 @@ public extension AnyModalRouter {
             }
         }
     }
+
+    var isAlertPresented: Bool {
+        get { presentedAlert != nil }
+        set {
+            guard !newValue else { return }
+            presented = nil
+        }
+    }
+
+    var presentedAlert: AlertRouter? {
+        presented as? AlertRouter
+    }
 }
 
 // MARK: - View
@@ -133,6 +148,20 @@ struct AnyModalView: View {
                     arrowEdge: router.popover?.transition.popoverArrowEdge,
                     content: { $0.makeView() }
                 )
+                .alert(router.presentedAlert?.config.title ?? "", isPresented: $router.isAlertPresented) {
+                    if let alert = router.presentedAlert {
+                        ForEach(alert.config.actions) { action in
+                            Button(action.title, role: action.role) {
+                                action.handler()
+                            }
+                        }
+                    }
+                } message: {
+                    if let message = router.presentedAlert?.config.message {
+                        Text(message)
+                    }
+                }
+
         } else {
             router.makeContentView()
                 .onAppear { isReadyToPresent = true }
