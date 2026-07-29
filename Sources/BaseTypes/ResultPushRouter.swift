@@ -16,17 +16,17 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
 
     /// Called with the result value just before the router closes.
     /// Set by the presenting router when creating this router.
-    private let onClose: ((ClosingResult) -> Void)?
+    private let onClose: (ClosingResult) -> Bool
 
     // MARK: Initialization
 
-    public init(onCloseWithResult: ((ClosingResult) -> Void)? = nil) {
-        self.onClose = onCloseWithResult
+    public init(onClose: @escaping (ClosingResult) -> Bool) {
+        self.onClose = onClose
         super.init()
     }
 
-    public init(onClose: (() -> Void)? = nil) where ClosingResult == Void {
-        self.onClose = { _ in onClose?() }
+    public init(onClose: (() -> Bool)? = nil) where ClosingResult == Void {
+        self.onClose = { _ in onClose?() ?? true }
         super.init()
     }
 
@@ -34,7 +34,7 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
 
     /// Delivers the result to `onClose` if set; otherwise dismisses this router.
     public func requestClose(with result: ClosingResult) {
-        onClose?(result)
+        guard onClose(result) else { return }
         guard let pushing else {
             stack?.presenting?.presented = nil
             return

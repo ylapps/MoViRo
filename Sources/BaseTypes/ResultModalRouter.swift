@@ -16,17 +16,17 @@ open class ResultModalRouter<ViewType: BaseView, ClosingResult>: AnyModalRouter 
 
     /// Called with the result value just before the router closes.
     /// Set by the presenting router when creating this router.
-    private let onClose: ((ClosingResult) -> Void)?
+    private let onClose: (ClosingResult) -> Bool
 
     // MARK: Initialization
 
-    public init(transition: Transition, onCloseWithResult: ((ClosingResult) -> Void)? = nil) {
-        self.onClose = onCloseWithResult
+    public init(transition: Transition, onClose: @escaping (ClosingResult) -> Bool) {
+        self.onClose = onClose
         super.init(transition: transition)
     }
 
-    public init(transition: AnyModalRouter.Transition, onClose: (() -> Void)? = nil) where ClosingResult == Void {
-        self.onClose = { _ in onClose?() }
+    public init(transition: AnyModalRouter.Transition, onClose: (() -> Bool)? = nil) where ClosingResult == Void {
+        self.onClose = { _ in onClose?() ?? true }
         super.init(transition: transition)
     }
 
@@ -34,8 +34,8 @@ open class ResultModalRouter<ViewType: BaseView, ClosingResult>: AnyModalRouter 
 
     /// Delivers the result to `onClose` if set; otherwise dismisses this router.
     public func requestClose(with result: ClosingResult) {
+        guard onClose(result) else { return }
         presenting?.presented = nil
-        onClose?(result)
     }
 
     public func requestClose() where ClosingResult == Void {
