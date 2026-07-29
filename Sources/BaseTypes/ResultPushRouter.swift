@@ -25,6 +25,10 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
         super.init()
     }
 
+    public convenience init(onClose: @escaping () -> Void) where ClosingResult == Void {
+        self.init(onClose: { _ in onClose() })
+    }
+
     // MARK: Result Closing
 
     /// Delivers the result to `onClose` if set; otherwise dismisses this router.
