@@ -11,12 +11,12 @@ public protocol ClosableRouter: AnyObject {
     func close()
 }
 
-extension ResultPushRouter: ClosableRouter where ClosingResult == Void {
+extension PushRouter: ClosableRouter {
 
     public func close() { requestClose() }
 }
 
-extension ResultModalRouter: ClosableRouter where ClosingResult == Void {
+extension ModalRouter: ClosableRouter {
 
     public func close() { requestClose() }
 }

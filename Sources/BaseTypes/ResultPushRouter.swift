@@ -7,7 +7,9 @@
 
 import SwiftUI
 
-open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
+open class PushRouterWithCloseReason<ViewType: BaseView, CloseReason>: AnyPushRouter {
+
+    public typealias ReasonHandler = (CloseReason?) -> Void
 
     // MARK: State
 
@@ -16,35 +18,30 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
 
     /// Called with the result value just before the router closes.
     /// Set by the presenting router when creating this router.
-    private let onClose: (ClosingResult) -> Bool
+    private let onWillClose: ReasonHandler?
 
     // MARK: Initialization
 
-    public init(onClose: @escaping (ClosingResult) -> Bool) {
-        self.onClose = onClose
+    public init(onWillCloseWithReason: ReasonHandler?) {
+        self.onWillClose = onWillCloseWithReason
         super.init()
     }
 
-    public init(onClose: (() -> Bool)? = nil) where ClosingResult == Void {
-        self.onClose = { _ in onClose?() ?? true }
+    public init(onWillClose: (() -> Void)? = nil) where CloseReason == Never {
+        self.onWillClose = { _ in onWillClose?() }
         super.init()
     }
 
     // MARK: Result Closing
 
     /// Delivers the result to `onClose` if set; otherwise dismisses this router.
-    public func requestClose(with result: ClosingResult) {
-        guard onClose(result) else { return }
-        guard let pushing else {
+    public func requestClose(with reason: CloseReason? = nil) {
+        onWillClose?(reason)
+        if pushing?.pushed == self {
+            pushing?.pushed = nil
+        } else if stack?.root == self {
             stack?.presenting?.presented = nil
-            return
         }
-        pushing.pushed = nil
-    }
-
-    /// Delivers the result to `onClose` if set; otherwise dismisses this router.
-    public func requestClose() where ClosingResult == Void {
-        requestClose(with: ())
     }
 
     // MARK: Makers

@@ -7,7 +7,9 @@
 
 import SwiftUI
 
-open class ResultModalRouter<ViewType: BaseView, ClosingResult>: AnyModalRouter {
+open class ModalRouterWithCloseReason<ViewType: BaseView, CloseReason>: AnyModalRouter {
+
+    public typealias ReasonHandler = (CloseReason?) -> Void
 
     // MARK: State
 
@@ -16,30 +18,28 @@ open class ResultModalRouter<ViewType: BaseView, ClosingResult>: AnyModalRouter 
 
     /// Called with the result value just before the router closes.
     /// Set by the presenting router when creating this router.
-    private let onClose: (ClosingResult) -> Bool
+    private let onWillClose: ReasonHandler?
 
     // MARK: Initialization
 
-    public init(transition: Transition, onClose: @escaping (ClosingResult) -> Bool) {
-        self.onClose = onClose
+    public init(transition: Transition, onWillCloseWithReason: ReasonHandler?) {
+        self.onWillClose = onWillCloseWithReason
         super.init(transition: transition)
     }
 
-    public init(transition: AnyModalRouter.Transition, onClose: (() -> Bool)? = nil) where ClosingResult == Void {
-        self.onClose = { _ in onClose?() ?? true }
+    public init(transition: AnyModalRouter.Transition, onWillClose: (() -> Void)? = nil) where CloseReason == Never {
+        self.onWillClose = { _ in onWillClose?() }
         super.init(transition: transition)
     }
 
     // MARK: Result Closing
 
-    /// Delivers the result to `onClose` if set; otherwise dismisses this router.
-    public func requestClose(with result: ClosingResult) {
-        guard onClose(result) else { return }
+    /// Delivers the reason to `onWillClose` if set and dismisses this router if still presented after reason handling.
+    public func requestClose(with reason: CloseReason? = nil) {
+        onWillClose?(reason)
+        /// Dismiss if still presented after handling the reason
+        guard presenting?.presented == self else { return }
         presenting?.presented = nil
-    }
-
-    public func requestClose() where ClosingResult == Void {
-        requestClose(with: ())
     }
 
     // MARK: Makers

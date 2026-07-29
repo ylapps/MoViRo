@@ -9,4 +9,4 @@ import SwiftUI
 
 /// A modal router that carries no typed closing result.
 /// This is the standard base class for modal screen routers.
-public typealias ModalRouter<ViewType: BaseView> = ResultModalRouter<ViewType, Void>
+public typealias ModalRouter<ViewType: BaseView> = ModalRouterWithCloseReason<ViewType, Never>

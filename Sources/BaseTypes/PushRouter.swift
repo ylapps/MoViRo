@@ -9,6 +9,6 @@ import SwiftUI
 
 /// A push router that carries no typed closing result.
 /// This is the standard base class for push-based screen routers.
-public typealias PushRouter<ViewType: BaseView> = ResultPushRouter<ViewType, Void>
+public typealias PushRouter<ViewType: BaseView> = PushRouterWithCloseReason<ViewType, Never>
 
 public typealias NavigationStackRouter = AnyNavigationStackRouter
