@@ -34,15 +34,12 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
 
     /// Delivers the result to `onClose` if set; otherwise dismisses this router.
     public func requestClose(with result: ClosingResult) {
-        if let onClose {
-            onClose(result)
-        } else {
-            guard let pushing else {
-                stack?.presenting?.presented = nil
-                return
-            }
-            pushing.pushed = nil
+        onClose?(result)
+        guard let pushing else {
+            stack?.presenting?.presented = nil
+            return
         }
+        pushing.pushed = nil
     }
 
     /// Delivers the result to `onClose` if set; otherwise dismisses this router.

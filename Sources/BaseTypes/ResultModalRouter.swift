@@ -34,11 +34,8 @@ open class ResultModalRouter<ViewType: BaseView, ClosingResult>: AnyModalRouter 
 
     /// Delivers the result to `onClose` if set; otherwise dismisses this router.
     public func requestClose(with result: ClosingResult) {
-        if let onClose {
-            onClose(result)
-        } else {
-            presenting?.presented = nil
-        }
+        presenting?.presented = nil
+        onClose?(result)
     }
 
     public func requestClose() where ClosingResult == Void {
