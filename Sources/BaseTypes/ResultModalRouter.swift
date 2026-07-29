@@ -25,8 +25,9 @@ open class ResultModalRouter<ViewType: BaseView, ClosingResult>: AnyModalRouter 
         super.init(transition: transition)
     }
 
-    public convenience init(transition: AnyModalRouter.Transition, onClose: @escaping () -> Void) where ClosingResult == Void {
-        self.init(transition: transition, onClose: { _ in onClose() })
+    public init(transition: AnyModalRouter.Transition, onClose: @escaping () -> Void) where ClosingResult == Void {
+        self.onClose = { _ in onClose() }
+        super.init(transition: transition)
     }
 
     // MARK: Result Closing
