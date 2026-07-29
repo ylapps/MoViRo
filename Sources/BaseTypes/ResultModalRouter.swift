@@ -20,13 +20,13 @@ open class ResultModalRouter<ViewType: BaseView, ClosingResult>: AnyModalRouter 
 
     // MARK: Initialization
 
-    public init(transition: Transition, onClose: ((ClosingResult) -> Void)? = nil) {
-        self.onClose = onClose
+    public init(transition: Transition, onCloseWithResult: ((ClosingResult) -> Void)? = nil) {
+        self.onClose = onCloseWithResult
         super.init(transition: transition)
     }
 
-    public init(transition: AnyModalRouter.Transition, onClose: @escaping () -> Void) where ClosingResult == Void {
-        self.onClose = { _ in onClose() }
+    public init(transition: AnyModalRouter.Transition, onClose: (() -> Void)? = nil) where ClosingResult == Void {
+        self.onClose = { _ in onClose?() }
         super.init(transition: transition)
     }
 

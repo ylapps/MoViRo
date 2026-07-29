@@ -20,13 +20,13 @@ open class ResultPushRouter<ViewType: BaseView, ClosingResult>: AnyPushRouter {
 
     // MARK: Initialization
 
-    public init(onClose: ((ClosingResult) -> Void)? = nil) {
-        self.onClose = onClose
+    public init(onCloseWithResult: ((ClosingResult) -> Void)? = nil) {
+        self.onClose = onCloseWithResult
         super.init()
     }
 
-    public init(onClose: @escaping () -> Void) where ClosingResult == Void {
-        self.onClose = { _ in onClose() }
+    public init(onClose: (() -> Void)? = nil) where ClosingResult == Void {
+        self.onClose = { _ in onClose?() }
         super.init()
     }
 
