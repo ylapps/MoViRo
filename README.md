@@ -71,8 +71,8 @@ AnyRouter                        Base class for all routers
 | `PushRouter<V>` | A screen inside a navigation stack |
 | `ModalRouter<V>` | A screen presented as a modal |
 | `NavigationStackRouter` | Wrapping a push flow in `NavigationStack` |
-| `ResultModalRouter<V, R>` | Modal that returns a typed result |
-| `ResultPushRouter<V, R>` | Push screen that returns a typed result |
+| `ModalRouterWithCloseReason<V, R>` | Modal that provides a close reason |
+| `PushRouterWithCloseReason<V, R>` | Push screen that provides a close reason |
 
 ## Usage
 
@@ -227,6 +227,13 @@ model.router?.requestClose()
 model.router?.requestClose()
 ```
 
+Both `PushRouter` and `ModalRouter` also conform to the `ClosableRouter` protocol, which provides a `close()` method — useful when you need a protocol-based reference to dismiss a router without knowing its concrete type:
+
+```swift
+let closable: any ClosableRouter = someRouter
+closable.close()
+```
+
 ### Switch Routers
 
 Swap content without navigation transitions:
@@ -254,14 +261,14 @@ final class MyPushSwitch: AnyPushSwitchRouter {
 }
 ```
 
-### Result Routers
+### Close Reason Routers
 
-Use `ResultModalRouter` or `ResultPushRouter` when a screen needs to return a typed result to its caller. The `onClose` callback is injected at construction time:
+Use `ModalRouterWithCloseReason` or `PushRouterWithCloseReason` when a screen needs to communicate a reason for closing to its caller. The `onWillCloseWithReason` handler is called before dismissal, then the router automatically dismisses itself if still presented:
 
 ```swift
-final class ColorPickerRouter: ResultModalRouter<ColorPickerView, Color> {
-    init(onClose: ((Color) -> Void)? = nil) {
-        super.init(transition: .sheet, onClose: onClose)
+final class ColorPickerRouter: ModalRouterWithCloseReason<ColorPickerView, Color> {
+    init(onWillCloseWithReason: ReasonHandler? = nil) {
+        super.init(transition: .sheet, onWillCloseWithReason: onWillCloseWithReason)
     }
 
     override func makeModel() -> ColorPickerModel {
@@ -269,12 +276,49 @@ final class ColorPickerRouter: ResultModalRouter<ColorPickerView, Color> {
     }
 }
 
-// Present and handle the result
+// Present and handle the close reason
 let picker = ColorPickerRouter { color in
-    self.selectedColor = color
+    self.selectedColor = color  // color is Color? — nil if closed without picking
 }
 stack?.presented = picker
+
+// Inside the picker, close with a reason
+requestClose(with: .blue)
+
+// Or close without a reason (handler receives nil)
+requestClose()
 ```
+
+Note: `PushRouter<V>` and `ModalRouter<V>` are typealiases for the `Never` close reason case, meaning they have no typed close reason. They use a convenience initializer that accepts an optional `onWillClose: (() -> Void)?` callback.
+
+## Helpers
+
+### AlertRoutable
+
+Conform your router to `AlertRoutable` to get a `showAlert(config:)` method that presents an `AlertRouter`:
+
+```swift
+final class MyRouter: PushRouter<MyView>, AlertRoutable {
+    func confirmDelete() {
+        showAlert(config: .init(
+            title: "Delete?",
+            message: "This action cannot be undone.",
+            actions: [
+                .init(title: "Cancel", role: .cancel),
+                .init(title: "Delete", role: .destructive) {
+                    // handle deletion
+                }
+            ]
+        ))
+    }
+}
+```
+
+Default implementations are provided for both `AnyPushRouter` and `AnyModalRouter` conformers.
+
+### ClosableRouter
+
+A protocol that provides a simple `close()` method. Both `PushRouter` and `ModalRouter` conform to it automatically, making it useful for protocol-based dismissal.
 
 ## ModelComposer
 
@@ -335,8 +379,11 @@ Sources/
 │   ├── ModalPreviewRouter.swift
 │   ├── ModalRouter.swift
 │   ├── PushRouter.swift
-│   ├── ResultModalRouter.swift
-│   └── ResultPushRouter.swift
+│   ├── ResultModalRouter.swift  # ModalRouterWithCloseReason
+│   └── ResultPushRouter.swift   # PushRouterWithCloseReason
+├── Helpers/               # Protocols and extensions
+│   ├── AlertRoutable.swift
+│   └── ClosableRouter.swift
 └── Export.swift
 ```
 

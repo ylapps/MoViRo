@@ -6,30 +6,32 @@
 @testable import Moviro
 import Testing
 
-@Suite("ResultRouter")
+@Suite("CloseReason Router")
 @MainActor
 struct ResultRouterTests {
 
     // MARK: - Push Router
 
-    @Test func requestClose_callsOnClose() {
+    @Test func requestClose_callsOnWillClose() {
         let parent = StubPushRouter()
-        var receivedResult: String?
-        let child = StubResultPushRouter(onClose: { receivedResult = $0 })
+        var receivedReason: String?
+        let child = StubResultPushRouter(onWillCloseWithReason: { receivedReason = $0 })
         parent.pushed = child
         child.requestClose(with: "done")
-        #expect(receivedResult == "done")
+        #expect(receivedReason == "done")
     }
 
-    @Test func requestClose_parentDismissesChild() {
+    @Test func requestClose_dismissesAfterHandler() {
         let parent = StubPushRouter()
-        let child = StubResultPushRouter(onClose: { _ in parent.pushed = nil })
+        var handlerCalled = false
+        let child = StubResultPushRouter(onWillCloseWithReason: { _ in handlerCalled = true })
         parent.pushed = child
         child.requestClose(with: "done")
+        #expect(handlerCalled)
         #expect(parent.pushed == nil)
     }
 
-    @Test func requestClose_withoutOnClose_fallsBackToDismiss() {
+    @Test func requestClose_withoutHandler_dismisses() {
         let parent = StubPushRouter()
         let child = StubResultPushRouter()
         parent.pushed = child
@@ -37,21 +39,33 @@ struct ResultRouterTests {
         #expect(parent.pushed == nil)
     }
 
-    @Test func requestClose_withOnClose_doesNotDismissAutomatically() {
+    @Test func requestClose_handlerDismissesEarly_noDoubleDismiss() {
         let parent = StubPushRouter()
-        let child = StubResultPushRouter(onClose: { _ in /* parent decides not to dismiss */ })
+        let child = StubResultPushRouter(onWillCloseWithReason: { _ in parent.pushed = nil })
         parent.pushed = child
         child.requestClose(with: "done")
-        #expect(parent.pushed != nil)
+        // Handler already dismissed — router does not crash or double-dismiss
+        #expect(parent.pushed == nil)
+    }
+
+    @Test func requestClose_withNilReason() {
+        let parent = StubPushRouter()
+        var receivedReason: String?? = .some("initial")
+        let child = StubResultPushRouter(onWillCloseWithReason: { receivedReason = $0 })
+        parent.pushed = child
+        child.requestClose()
+        #expect(receivedReason == nil as String?)
+        #expect(parent.pushed == nil)
     }
 
     @Test func requestCloseVoid_pushRouter() {
         let parent = StubPushRouter()
         var closeCalled = false
-        let child = StubVoidResultPushRouter(onClose: { closeCalled = true })
+        let child = StubVoidResultPushRouter(onWillClose: { closeCalled = true })
         parent.pushed = child
         child.requestClose()
         #expect(closeCalled)
+        #expect(parent.pushed == nil)
     }
 
     // MARK: - Push Router Presented
@@ -101,24 +115,26 @@ struct ResultRouterTests {
 
     // MARK: - Modal Router
 
-    @Test func requestClose_modal_callsOnClose() {
+    @Test func requestClose_modal_callsOnWillClose() {
         let parent = StubModalRouter(transition: .sheet)
-        var receivedResult: Int?
-        let child = StubResultModalRouter(onClose: { receivedResult = $0 })
+        var receivedReason: Int?
+        let child = StubResultModalRouter(onWillCloseWithReason: { receivedReason = $0 })
         parent.presented = child
         child.requestClose(with: 42)
-        #expect(receivedResult == 42)
+        #expect(receivedReason == 42)
     }
 
-    @Test func requestClose_modal_parentDismissesChild() {
+    @Test func requestClose_modal_dismissesAfterHandler() {
         let parent = StubModalRouter(transition: .sheet)
-        let child = StubResultModalRouter(onClose: { _ in parent.presented = nil })
+        var handlerCalled = false
+        let child = StubResultModalRouter(onWillCloseWithReason: { _ in handlerCalled = true })
         parent.presented = child
         child.requestClose(with: 42)
+        #expect(handlerCalled)
         #expect(parent.presented == nil)
     }
 
-    @Test func requestClose_modal_withoutOnClose_fallsBackToDismiss() {
+    @Test func requestClose_modal_withoutHandler_dismisses() {
         let parent = StubModalRouter(transition: .sheet)
         let child = StubResultModalRouter()
         parent.presented = child
@@ -126,20 +142,31 @@ struct ResultRouterTests {
         #expect(parent.presented == nil)
     }
 
-    @Test func requestClose_modal_withOnClose_doesNotDismissAutomatically() {
+    @Test func requestClose_modal_handlerDismissesEarly_noDoubleDismiss() {
         let parent = StubModalRouter(transition: .sheet)
-        let child = StubResultModalRouter(onClose: { _ in /* parent decides not to dismiss */ })
+        let child = StubResultModalRouter(onWillCloseWithReason: { _ in parent.presented = nil })
         parent.presented = child
         child.requestClose(with: 42)
-        #expect(parent.presented != nil)
+        #expect(parent.presented == nil)
+    }
+
+    @Test func requestClose_modal_withNilReason() {
+        let parent = StubModalRouter(transition: .sheet)
+        var receivedReason: Int?? = .some(99)
+        let child = StubResultModalRouter(onWillCloseWithReason: { receivedReason = $0 })
+        parent.presented = child
+        child.requestClose()
+        #expect(receivedReason == nil as Int?)
+        #expect(parent.presented == nil)
     }
 
     @Test func requestCloseVoid_modalRouter() {
         let parent = StubModalRouter(transition: .sheet)
         var closeCalled = false
-        let child = StubVoidResultModalRouter(onClose: { closeCalled = true })
+        let child = StubVoidResultModalRouter(onWillClose: { closeCalled = true })
         parent.presented = child
         child.requestClose()
         #expect(closeCalled)
+        #expect(parent.presented == nil)
     }
 }

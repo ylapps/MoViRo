@@ -86,4 +86,31 @@ struct ClosableRouterTests {
         #expect(child.presenting == nil)
         #expect(parent.presented == nil)
     }
+
+    // MARK: - ClosableRouter Protocol
+
+    @Test func closableRouter_modalClose() {
+        let parent = StubModalRouter(transition: .sheet)
+        let child = StubVoidResultModalRouter()
+        parent.presented = child
+        (child as ClosableRouter).close()
+        #expect(parent.presented == nil)
+    }
+
+    @Test func closableRouter_pushClose() {
+        let a = StubPushRouter()
+        let b = StubVoidResultPushRouter()
+        a.pushed = b
+        (b as ClosableRouter).close()
+        #expect(a.pushed == nil)
+    }
+
+    @Test func closableRouter_canBeUsedAsProtocol() {
+        let parent = StubModalRouter(transition: .sheet)
+        let child = StubVoidResultModalRouter()
+        parent.presented = child
+        let closable: any ClosableRouter = child
+        closable.close()
+        #expect(parent.presented == nil)
+    }
 }

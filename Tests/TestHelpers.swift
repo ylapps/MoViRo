@@ -31,23 +31,23 @@ struct StubResultView: BaseView {
 @Observable
 final class StubResultModel: Model<Never> {}
 
-final class StubResultPushRouter: ResultPushRouter<StubResultView, String> {
-    override init(onClose: ((String) -> Void)? = nil) { super.init(onClose: onClose) }
+final class StubResultPushRouter: PushRouterWithCloseReason<StubResultView, String> {
+    override init(onWillCloseWithReason: ReasonHandler? = nil) { super.init(onWillCloseWithReason: onWillCloseWithReason) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 
-final class StubVoidResultPushRouter: ResultPushRouter<StubResultView, Void> {
-    override init(onClose: ((()) -> Void)? = nil) { super.init(onClose: onClose) }
+final class StubVoidResultPushRouter: PushRouter<StubResultView> {
+    override init(onWillClose: (() -> Void)? = nil) { super.init(onWillClose: onWillClose) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 
-final class StubResultModalRouter: ResultModalRouter<StubResultView, Int> {
-    init(onClose: ((Int) -> Void)? = nil) { super.init(transition: .sheet, onClose: onClose) }
+final class StubResultModalRouter: ModalRouterWithCloseReason<StubResultView, Int> {
+    init(onWillCloseWithReason: ReasonHandler? = nil) { super.init(transition: .sheet, onWillCloseWithReason: onWillCloseWithReason) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 
-final class StubVoidResultModalRouter: ResultModalRouter<StubResultView, Void> {
-    init(onClose: ((()) -> Void)? = nil) { super.init(transition: .sheet, onClose: onClose) }
+final class StubVoidResultModalRouter: ModalRouter<StubResultView> {
+    init(onWillClose: (() -> Void)? = nil) { super.init(transition: .sheet, onWillClose: onWillClose) }
     override func makeModel() -> StubResultModel { StubResultModel() }
 }
 
