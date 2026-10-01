@@ -129,42 +129,63 @@ public extension AnyModalRouter {
 struct AnyModalView: View {
 
     @State var router: AnyModalRouter
+
+    /// A presentation set before the content is on screen waits for it to
+    /// appear. Only the presentations wait: the content is built once. Swapping
+    /// the whole view on this flag built the content twice — its state reset,
+    /// and any NavigationStack inside it, pushes included, rebuilt.
     @State private var isReadyToPresent = false
 
     var body: some View {
-        if isReadyToPresent {
-            router.makeContentView()
-                .sheet(
-                    item: $router.sheet,
-                    content: { $0.makeView() }
-                )
-                .fullScreenCover(
-                    item: $router.fullScreen,
-                    content: { $0.makeView() }
-                )
-                .popover(
-                    item: $router.popover,
-                    attachmentAnchor: router.popover?.transition.popoverAttachmentAnchor ?? .rect(.bounds),
-                    arrowEdge: router.popover?.transition.popoverArrowEdge,
-                    content: { $0.makeView() }
-                )
-                .alert(router.presentedAlert?.config.title ?? "", isPresented: $router.isAlertPresented) {
-                    if let alert = router.presentedAlert {
-                        ForEach(alert.config.actions) { action in
-                            Button(action.title, role: action.role) {
-                                action.handler()
-                            }
+        let isReady = isReadyToPresent
+        router.makeContentView()
+            .sheet(
+                item: presentation(\.sheet, isReady: isReady),
+                content: { $0.makeView() }
+            )
+            .fullScreenCover(
+                item: presentation(\.fullScreen, isReady: isReady),
+                content: { $0.makeView() }
+            )
+            .popover(
+                item: presentation(\.popover, isReady: isReady),
+                attachmentAnchor: router.popover?.transition.popoverAttachmentAnchor ?? .rect(.bounds),
+                arrowEdge: router.popover?.transition.popoverArrowEdge,
+                content: { $0.makeView() }
+            )
+            .alert(router.presentedAlert?.config.title ?? "", isPresented: alertPresentation(isReady: isReady)) {
+                if let alert = router.presentedAlert {
+                    ForEach(alert.config.actions) { action in
+                        Button(action.title, role: action.role) {
+                            action.handler()
                         }
                     }
-                } message: {
-                    if let message = router.presentedAlert?.config.message {
-                        Text(message)
-                    }
                 }
+            } message: {
+                if let message = router.presentedAlert?.config.message {
+                    Text(message)
+                }
+            }
+            .onAppear { isReadyToPresent = true }
+    }
+}
 
-        } else {
-            router.makeContentView()
-                .onAppear { isReadyToPresent = true }
-        }
+private extension AnyModalView {
+
+    func presentation(
+        _ keyPath: ReferenceWritableKeyPath<AnyModalRouter, AnyModalRouter?>,
+        isReady: Bool
+    ) -> Binding<AnyModalRouter?> {
+        Binding(
+            get: { isReady ? router[keyPath: keyPath] : nil },
+            set: { router[keyPath: keyPath] = $0 }
+        )
+    }
+
+    func alertPresentation(isReady: Bool) -> Binding<Bool> {
+        Binding(
+            get: { isReady && router.isAlertPresented },
+            set: { router.isAlertPresented = $0 }
+        )
     }
 }
