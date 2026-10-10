@@ -2,8 +2,6 @@
 //  BaseView.swift
 //  Moviro
 //
-//  Created by Yevhenii Lytvynenko on 24.11.2024.
-//
 
 import SwiftUI
 
@@ -18,9 +16,8 @@ public protocol BaseView: View & ModelHolding where Model: AnyModel {}
 
 public extension BaseView {
 
+    /// The view, with its model's lifecycle tied to the view's appearance.
     static func with(_ model: Model) -> some View {
-        Self(model: model)
-            .onAppear { [weak model] in model?.isAppeared = true }
-            .onDisappear { [weak model] in model?.isAppeared = false }
+        Self(model: model).appearance(of: model)
     }
 }

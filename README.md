@@ -17,7 +17,7 @@ Add Moviro to your project via Xcode or in your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ylapps/MoViRo.git", from: "1.1.0")
+    .package(url: "https://github.com/ylapps/MoViRo.git", from: "1.4.0")
 ]
 ```
 
@@ -63,6 +63,37 @@ AnyRouter                        Base class for all routers
 ├── AnyPushRouter                Push navigation via navigationDestination
 │   └── AnyPushSwitchRouter      Swap pushed content in-place
 ```
+
+### How a router becomes a view
+
+`makeView()` on any router returns its screen. Each concrete router composes
+that screen statically — its `BaseView`, the model's appearance tracking, and
+the modifier that hangs its presentations or its push destination off it:
+
+```swift
+// PushRouter<V>
+ViewType(model: model)
+    .appearance(of: model)
+    .pushDestination(of: self)
+
+// ModalRouter<V>
+ViewType(model: model)
+    .appearance(of: model)
+    .presentations(of: self)
+
+// NavigationStackRouter
+NavigationStack { root.makeView() }
+    .presentations(of: self)
+```
+
+A parent holds its children as `AnyPushRouter` / `AnyModalRouter`, so the
+hand-off from a router to the screen it describes is the one place a view's
+type has to be erased. That happens once per screen, inside Moviro, and the
+dynamic type behind it never changes for a given router — SwiftUI keeps the
+screen's identity and state across updates. Everything around it is statically
+typed, and `makeView()` identifies the screen by its router, so replacing a
+`pushed` or `presented` router with another of the same kind is a new screen
+with fresh state.
 
 ### Concrete Types (you subclass these)
 
@@ -347,6 +378,30 @@ View models are created on demand and released when no longer retained externall
 
 Override these in your model subclasses for setup/teardown logic.
 
+## View Modifiers
+
+Moviro's own screens are built from three public modifiers, which you can also
+apply to views Moviro does not build — a child model's view, or a router's
+content hosted in a `UIHostingController` of your own:
+
+| Modifier | What it does |
+|---|---|
+| `.appearance(of: model)` | Runs the model's `onAppear()` / `onDisappear()` with the view's appearance. `BaseView.with(model)` is `Self(model:)` plus this |
+| `.presentations(of: modalRouter)` | Hangs the sheet, full-screen cover, popover and alert the router presents off the view. A presentation set before the view is on screen waits for it to appear |
+| `.pushDestination(of: pushRouter)` | Hangs the screen the router pushes off the view, through `navigationDestination(item:)` |
+
+```swift
+struct HomeView: BaseView {
+    @State var model: HomeModel
+
+    var body: some View {
+        List { /* ... */ }
+            .toolbar { HomeToolbar(model: model.toolbarModel) }
+            .appearance(of: model.toolbarModel)   // a ToolbarContent cannot go through BaseView.with
+    }
+}
+```
+
 ## Debug Logging
 
 In `DEBUG` builds, Moviro automatically logs router and model lifecycle events:
@@ -364,23 +419,29 @@ In `DEBUG` builds, Moviro automatically logs router and model lifecycle events:
 
 ```
 Sources/
-├── AnyTypes/              # Base observable classes (type-erased layer)
-│   ├── AnyModel.swift
-│   ├── AnyRouter.swift
-│   ├── AnyModalRouter.swift
+├── Routers/               # The router tree
+│   ├── AnyRouter.swift              # Base: identity, makeView()
+│   ├── AnyModalRouter.swift         # presented / presenting, Transition
 │   ├── AnyModalSwitchRouter.swift
 │   ├── AnyNavigationStackRouter.swift
-│   ├── AnyPushRouter.swift
-│   └── AnyPushSwitchRouter.swift
-├── BaseTypes/             # Concrete types you subclass
-│   ├── BaseView.swift
-│   ├── Model.swift
-│   ├── ModelComposer.swift
+│   ├── AnyPushRouter.swift          # pushed / pushing, stack
+│   ├── AnyPushSwitchRouter.swift
+│   ├── AlertRouter.swift
 │   ├── ModalPreviewRouter.swift
-│   ├── ModalRouter.swift
-│   ├── PushRouter.swift
-│   ├── ResultModalRouter.swift  # ModalRouterWithCloseReason
-│   └── ResultPushRouter.swift   # PushRouterWithCloseReason
+│   ├── ModalRouter.swift            # typealias of ModalRouterWithCloseReason<V, Never>
+│   ├── PushRouter.swift             # typealias of PushRouterWithCloseReason<V, Never>
+│   ├── ResultModalRouter.swift      # ModalRouterWithCloseReason
+│   └── ResultPushRouter.swift       # PushRouterWithCloseReason
+├── Views/                 # How routers become views
+│   ├── Appearance.swift             # .appearance(of:)
+│   ├── BaseView.swift
+│   ├── ErasedScreen.swift           # the one type-erased view
+│   ├── Presentations.swift          # .presentations(of:)
+│   └── PushDestination.swift        # .pushDestination(of:)
+├── Models/
+│   ├── AnyModel.swift
+│   ├── Model.swift
+│   └── ModelComposer.swift
 ├── Helpers/               # Protocols and extensions
 │   ├── AlertRoutable.swift
 │   └── ClosableRouter.swift

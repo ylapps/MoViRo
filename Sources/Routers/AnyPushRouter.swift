@@ -2,8 +2,6 @@
 //  AnyPushRouter.swift
 //  Moviro
 //
-//  Created by Yevhenii Lytvynenko on 24.11.2024.
-//
 
 import SwiftUI
 
@@ -20,6 +18,8 @@ open class AnyPushRouter: AnyRouter {
         }
     }
 
+    /// A push router presents through its stack, so a sheet survives the
+    /// screen that asked for it being popped.
     @ObservationIgnored
     public var presented: AnyModalRouter? {
         get { stack?.presented }
@@ -33,26 +33,8 @@ open class AnyPushRouter: AnyRouter {
     @ObservationIgnored
     weak var stack: AnyNavigationStackRouter?
 
-    public final func makeView() -> some View {
-        AnyPushView(router: self)
-    }
-
     func updateStack(with newStack: AnyNavigationStackRouter?) {
         stack = newStack
         pushed?.updateStack(with: newStack)
-    }
-}
-
-// MARK: - View
-
-private struct AnyPushView: View {
-
-    @State var router: AnyPushRouter
-
-    var body: some View {
-        router.makeContentView()
-            .navigationDestination(item: $router.pushed) { pushed in
-                pushed.makeView()
-            }
     }
 }

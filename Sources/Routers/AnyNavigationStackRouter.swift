@@ -2,12 +2,8 @@
 //  AnyNavigationStackRouter.swift
 //  Moviro
 //
-//  Created by Yevhenii Lytvynenko on 24.11.2024.
-//
 
 import SwiftUI
-
-// MARK: - Router
 
 @Observable
 open class AnyNavigationStackRouter: AnyModalRouter {
@@ -25,20 +21,18 @@ open class AnyNavigationStackRouter: AnyModalRouter {
         root.updateStack(with: self)
     }
 
-    override func makeContentView() -> AnyView {
-        .init(AnyNavigationStackView(router: self))
-    }
-}
+    // MARK: Screen
 
-// MARK: - View
-
-private struct AnyNavigationStackView: View {
-
-    @State var router: AnyNavigationStackRouter
-
-    var body: some View {
+    /// The stack's presentations sit outside the `NavigationStack`, which is
+    /// where a sheet asked for by any pushed screen is shown from.
+    var screen: some View {
         NavigationStack {
-            router.root.makeView()
+            root.makeView()
         }
+        .presentations(of: self)
+    }
+
+    override func makeScreen() -> ErasedScreen {
+        .init(screen)
     }
 }

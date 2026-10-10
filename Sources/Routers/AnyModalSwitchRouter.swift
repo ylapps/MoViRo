@@ -2,8 +2,6 @@
 //  AnyModalSwitchRouter.swift
 //  Moviro
 //
-//  Created by Yevhenii Lytvynenko on 28.11.2024.
-//
 
 import SwiftUI
 
@@ -27,17 +25,16 @@ open class AnyModalSwitchRouter: AnyModalRouter {
         super.init(transition: transition)
     }
 
-    override final func makeContentView() -> AnyView {
-        .init(AnyModalSwitchView(router: self))
+    // MARK: Screen
+
+    /// The current router's screen, and nothing else: `presented` forwards to
+    /// `current`, whose own screen carries the presentations, so a second set
+    /// here would bind the same sheet twice.
+    var screen: some View {
+        current.makeView()
     }
-}
 
-private struct AnyModalSwitchView: View {
-
-    @State var router: AnyModalSwitchRouter
-
-    var body: some View {
-        router.current.makeView()
-            .id(router.current.id)
+    override func makeScreen() -> ErasedScreen {
+        .init(screen)
     }
 }

@@ -62,9 +62,9 @@ struct AlertRoutableTests {
 // MARK: - Stubs
 
 private final class StubAlertRoutablePushRouter: AnyPushRouter, AlertRoutable {
-    override func makeContentView() -> AnyView { AnyView(EmptyView()) }
+    override func makeScreen() -> ErasedScreen { .init(EmptyView().pushDestination(of: self)) }
 }
 
 private final class StubAlertRoutableModalRouter: AnyModalRouter, AlertRoutable {
-    override func makeContentView() -> AnyView { AnyView(EmptyView()) }
+    override func makeScreen() -> ErasedScreen { .init(EmptyView().presentations(of: self)) }
 }

@@ -2,8 +2,6 @@
 //  Model.swift
 //  Moviro
 //
-//  Created by Yevhenii Lytvynenko on 24.11.2024.
-//
 
 import Foundation
 
@@ -42,6 +40,11 @@ extension Model: Hashable {
 
 // MARK: - WeakAnySemanticWrapper
 
+/// Holds a class router weakly and a value router strongly. `Router` is
+/// almost always a protocol existential (`any HomeRouterInterface`), and a
+/// class-bound existential does not satisfy `Router: AnyObject` as a generic
+/// constraint, so the weak reference has to be untyped and the read a cast —
+/// one conformance lookup per router type, cached by the runtime after that.
 private struct WeakAnySemanticWrapper<T> {
 
     private weak var object: AnyObject?
@@ -52,7 +55,7 @@ private struct WeakAnySemanticWrapper<T> {
     }
 
     init(wrapped: T) {
-        if Mirror(reflecting: wrapped).displayStyle == .class {
+        if type(of: wrapped as Any) is AnyObject.Type {
             object = wrapped as AnyObject
         } else {
             value = wrapped

@@ -2,8 +2,6 @@
 //  AnyPushSwitchRouter.swift
 //  Moviro
 //
-//  Created by Yevhenii Lytvynenko on 12.03.2025.
-//
 
 import SwiftUI
 
@@ -29,22 +27,20 @@ open class AnyPushSwitchRouter: AnyPushRouter {
         super.init()
     }
 
-    override func makeContentView() -> AnyView {
-        .init(AnyPushSwitchContentView(router: self))
-    }
-
     override func updateStack(with newStack: AnyNavigationStackRouter?) {
         super.updateStack(with: newStack)
         current.updateStack(with: newStack)
     }
-}
 
-private struct AnyPushSwitchContentView: View {
+    // MARK: Screen
 
-    @State var router: AnyPushSwitchRouter
+    /// The current router's screen, destination included; `pushed` forwards
+    /// to `current`, so that one destination is the switch's too.
+    var screen: some View {
+        current.makeView()
+    }
 
-    var body: some View {
-        router.current.makeContentView()
-            .id(router.current.id)
+    override func makeScreen() -> ErasedScreen {
+        .init(screen)
     }
 }

@@ -2,8 +2,8 @@
 //  AlertRouter.swift
 //  Moviro
 //
-//  Created by Yevhenii Lytvynenko on 15.07.2026.
-//
+
+import SwiftUI
 
 public final class AlertRouter: AnyModalRouter {
 
@@ -12,6 +12,12 @@ public final class AlertRouter: AnyModalRouter {
     public init(config: Config) {
         self.config = config
         super.init(transition: .fullScreen)
+    }
+
+    /// An alert has no screen of its own: the router presenting it draws it
+    /// through `.alert`, see `Presentations`.
+    override func makeScreen() -> ErasedScreen {
+        .init(EmptyView())
     }
 }
 

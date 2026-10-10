@@ -2,8 +2,6 @@
 //  ResultModalRouter.swift
 //  Moviro
 //
-//  Created by Yevhenii Lytvynenko on 13.05.2026.
-//
 
 import SwiftUI
 
@@ -48,7 +46,15 @@ open class ModalRouterWithCloseReason<ViewType: BaseView, CloseReason>: AnyModal
         fatalError("Should be overriden")
     }
 
-    override func makeContentView() -> AnyView {
-        .init(ViewType.with(model))
+    // MARK: Screen
+
+    var screen: some View {
+        ViewType(model: model)
+            .appearance(of: model)
+            .presentations(of: self)
+    }
+
+    final override func makeScreen() -> ErasedScreen {
+        .init(screen)
     }
 }

@@ -2,8 +2,8 @@
 //  ModalPreviewRouter.swift
 //  Moviro
 //
-//  Created by Yevhenii Lytvynenko on 27.05.2025.
-//
+
+import SwiftUI
 
 @Observable
 public final class ModalPreviewRouter: AnyModalRouter {
@@ -17,14 +17,21 @@ public final class ModalPreviewRouter: AnyModalRouter {
         super.init(transition: .fullScreen)
     }
 
-    override func makeContentView() -> AnyView {
-        .init(ModalPreviewView(router: self))
+    // MARK: Screen
+
+    var screen: some View {
+        ModalPreviewView(router: self)
+            .presentations(of: self)
+    }
+
+    override func makeScreen() -> ErasedScreen {
+        .init(screen)
     }
 }
 
 private struct ModalPreviewView: View {
 
-    @State var router: ModalPreviewRouter
+    let router: ModalPreviewRouter
 
     var body: some View {
         Text("Modal Preview")

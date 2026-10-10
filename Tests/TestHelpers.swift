@@ -9,14 +9,14 @@ import SwiftUI
 // MARK: - Stub Routers
 
 final class StubModalRouter: AnyModalRouter {
-    override func makeContentView() -> AnyView {
-        AnyView(EmptyView())
+    override func makeScreen() -> ErasedScreen {
+        .init(EmptyView().presentations(of: self))
     }
 }
 
 final class StubPushRouter: AnyPushRouter {
-    override func makeContentView() -> AnyView {
-        AnyView(EmptyView())
+    override func makeScreen() -> ErasedScreen {
+        .init(EmptyView().pushDestination(of: self))
     }
 }
 
