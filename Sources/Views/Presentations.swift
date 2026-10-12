@@ -31,7 +31,7 @@ struct Presentations: ViewModifier {
     func body(content: Content) -> some View {
         content
             .sheet(item: presentation(\.sheet)) { $0.makeView() }
-            .fullScreenCover(item: presentation(\.fullScreen)) { $0.makeView() }
+            .fullScreenCover(item: presentation(\.fullScreen)) { CoverContent(router: $0) }
             .popover(
                 item: presentation(\.popover),
                 attachmentAnchor: router.popover?.transition.popoverAttachmentAnchor ?? .rect(.bounds),
@@ -50,7 +50,19 @@ struct Presentations: ViewModifier {
                     Text(message)
                 }
             }
-            .onAppear { isReadyToPresent = true }
+            .onAppear(perform: becomeReadyToPresent)
+    }
+
+    /// A cover with a transition of its own is presented by this flip when it
+    /// was set before the view appeared, and it must not slide in then either.
+    private func becomeReadyToPresent() {
+        guard router.fullScreen?.transition.coverTransition != nil else {
+            isReadyToPresent = true
+            return
+        }
+        withTransaction(\.disablesAnimations, true) {
+            isReadyToPresent = true
+        }
     }
 
     private func presentation(
@@ -70,6 +82,48 @@ struct Presentations: ViewModifier {
     }
 }
 
+// MARK: - Cover content
+
+/// A full-screen cover's content: the router's screen, or, for a cover with a
+/// transition of its own, that screen inserted and removed with the transition
+/// over a clear background. Such a cover is put up and taken down without
+/// animation (see `AnyModalRouter.presented`); what the user sees move is this.
+private struct CoverContent: View {
+
+    let router: AnyModalRouter
+
+    var body: some View {
+        if let cover = router.transition.coverTransition {
+            TransitionedCoverContent(router: router, cover: cover)
+        } else {
+            router.makeView()
+        }
+    }
+}
+
+/// Internal so the tests can host it: the test window presents no covers.
+struct TransitionedCoverContent: View {
+
+    let router: AnyModalRouter
+    let cover: AnyModalRouter.CoverTransition
+
+    var body: some View {
+        ZStack {
+            Color.clear
+            if router.isCoverContentShown {
+                router.makeView()
+                    .transition(cover.transition)
+            }
+        }
+        .presentationBackground(.clear)
+        .onAppear {
+            withAnimation(cover.insertion) {
+                router.isCoverContentShown = true
+            }
+        }
+    }
+}
+
 // MARK: - Presentation slots
 
 extension AnyModalRouter {
@@ -81,7 +135,7 @@ extension AnyModalRouter {
 
     var fullScreen: AnyModalRouter? {
         get {
-            guard !isAlertPresented, presented?.transition == .fullScreen else { return nil }
+            guard !isAlertPresented, presented?.transition.isFullScreen == true else { return nil }
             return presented
         }
         set { presented = newValue }

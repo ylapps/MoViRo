@@ -8,6 +8,9 @@ import SwiftUI
 @Observable
 open class AnyPushRouter: AnyRouter {
 
+    /// How this router's screen is pushed; see `Transition`.
+    public let transition: Transition
+
     /// Router pushed by this router
     public var pushed: AnyPushRouter? {
         willSet {
@@ -33,8 +36,27 @@ open class AnyPushRouter: AnyRouter {
     @ObservationIgnored
     weak var stack: AnyNavigationStackRouter?
 
+    init(transition: Transition = .automatic) {
+        self.transition = transition
+        super.init()
+    }
+
     func updateStack(with newStack: AnyNavigationStackRouter?) {
         stack = newStack
         pushed?.updateStack(with: newStack)
+    }
+}
+
+public extension AnyPushRouter {
+
+    enum Transition: Hashable {
+        /// The system push.
+        case automatic
+        /// The screen grows out of the view marked `zoomTransitionSource(id:)`
+        /// with the same id in the same stack, and shrinks back into it when
+        /// popped — on iOS 18 and later; before that, the system push. Fixed
+        /// at the router's creation, since the destination reads it as it is
+        /// built.
+        case zoom(sourceID: AnyHashable)
     }
 }

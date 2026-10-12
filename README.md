@@ -208,6 +208,30 @@ func pushDetail() {
 }
 ```
 
+### Zoom Push Transition
+
+A push can grow out of the view that was tapped and shrink back into it on
+pop — iOS 18's zoom navigation transition, matched through the stack. Create
+the router with `.zoom(sourceID:)` and mark the source view with the same id:
+
+```swift
+final class DetailRouter: PushRouter<DetailView> {
+    init(item: Item) {
+        super.init(transition: .zoom(sourceID: item.id))
+    }
+    // ...
+}
+
+// In the list screen, inside the same navigation stack
+ItemCard(item)
+    .zoomTransitionSource(id: item.id)
+    .onTapGesture { model.router?.showDetail(item) }
+```
+
+The namespace the two are matched in belongs to the `NavigationStackRouter`'s
+screen, so nothing is passed around. Before iOS 18 both are no-ops and the
+system push is used.
+
 ### Modal Presentation
 
 Present modals through the push router's `presented` property. The modal transition is defined at the router level:
@@ -245,6 +269,35 @@ func presentSheet() {
     presented = SheetRouter()
 }
 ```
+
+### Full Screen with a Transition of Its Own
+
+A full-screen cover normally slides up. `.fullScreen(transition:animation:removal:)`
+replaces that with any `AnyTransition` on the cover's content: the cover is put
+up without animation over a clear presentation background, the screen is
+inserted with the transition once the cover is on screen, and on dismissal the
+screen is removed with it before the cover is taken down. Wherever the
+transition leaves the screen clear, the presenting screen shows through, so a
+fade over the previous screen is one line:
+
+```swift
+final class RevealRouter: ModalRouter<RevealView> {
+    init() {
+        super.init(transition: .fullScreen(
+            transition: .opacity,
+            animation: .easeOut(duration: 0.45),
+            removal: .easeIn(duration: 0.4)   // defaults to `animation`
+        ))
+    }
+    // ...
+}
+```
+
+Dismissal is the usual `requestClose()` / `close()` or the presenting router's
+`presented = nil`; the presenting router's `presented` keeps the cover until its
+content has left, and the last value set while it is leaving is the one that
+lands. The transition carries no animation of its own — pass the timing through
+`animation` and `removal`, which is what the cover's removal waits on.
 
 ### Dismissing
 

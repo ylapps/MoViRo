@@ -25,9 +25,21 @@ open class PushRouterWithCloseReason<ViewType: BaseView, CloseReason>: AnyPushRo
         super.init()
     }
 
+    /// `transition` is how the screen is pushed — `.zoom(sourceID:)` for a
+    /// push that grows out of a view in the stack.
+    public init(transition: Transition, onWillCloseWithReason: ReasonHandler?) {
+        self.onWillClose = onWillCloseWithReason
+        super.init(transition: transition)
+    }
+
     public init(onWillClose: (() -> Void)? = nil) where CloseReason == Never {
         self.onWillClose = { _ in onWillClose?() }
         super.init()
+    }
+
+    public init(transition: Transition, onWillClose: (() -> Void)? = nil) where CloseReason == Never {
+        self.onWillClose = { _ in onWillClose?() }
+        super.init(transition: transition)
     }
 
     // MARK: Result Closing
