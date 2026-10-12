@@ -13,7 +13,9 @@ public extension View {
     /// somewhere Moviro does not build — a `UIHostingController` of your own,
     /// for instance.
     ///
-    /// A presentation set before the view is on screen waits for it to appear.
+    /// A presentation set before the view is on screen waits for the
+    /// transition that brings the view in to finish, so a chain of them set
+    /// up front — a deep link — lands one level after another.
     func presentations(of router: AnyModalRouter) -> some View {
         modifier(Presentations(router: router))
     }
@@ -50,7 +52,15 @@ struct Presentations: ViewModifier {
                     Text(message)
                 }
             }
-            .onAppear(perform: becomeReadyToPresent)
+            .background {
+                // Readiness is UIKit's `viewDidAppear`, not SwiftUI's `onAppear`:
+                // the latter fires while this view's own presentation is still
+                // animating, and a presentation asked for then — the next level
+                // of a deep link, three modals deep — is built but never reaches
+                // the window. `viewDidAppear` fires once the transition is over.
+                PresentationReadiness(onDidAppear: becomeReadyToPresent)
+                    .frame(width: 0, height: 0)
+            }
     }
 
     /// A cover with a transition of its own is presented by this flip when it
@@ -79,6 +89,50 @@ struct Presentations: ViewModifier {
             get: { isReadyToPresent && router.isAlertPresented },
             set: { router.isAlertPresented = $0 }
         )
+    }
+}
+
+// MARK: - Readiness
+
+/// Reports the UIKit appearance of the view it sits in: the hosting
+/// controller's `viewDidAppear`, forwarded to this child, fires once the
+/// presentation transition that brought the view in has finished.
+private struct PresentationReadiness: UIViewControllerRepresentable {
+
+    let onDidAppear: () -> Void
+
+    func makeUIViewController(context: Context) -> PresentationReadinessController {
+        PresentationReadinessController(onDidAppear: onDidAppear)
+    }
+
+    func updateUIViewController(_ controller: PresentationReadinessController, context: Context) {
+        controller.onDidAppear = onDidAppear
+    }
+}
+
+private final class PresentationReadinessController: UIViewController {
+
+    var onDidAppear: () -> Void
+
+    init(onDidAppear: @escaping () -> Void) {
+        self.onDidAppear = onDidAppear
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.isUserInteractionEnabled = false
+        view.backgroundColor = .clear
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        onDidAppear()
     }
 }
 
