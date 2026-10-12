@@ -232,6 +232,11 @@ The namespace the two are matched in belongs to the `NavigationStackRouter`'s
 screen, so nothing is passed around. Before iOS 18 both are no-ops and the
 system push is used.
 
+Give the source no pressed look. The system snapshots the source view at the
+push, and a `Button` in the plain style is still dimmed by the press at that
+moment, so the screen grows out of a washed-out card. A `ButtonStyle` whose
+body is just `configuration.label` keeps the snapshot true to the card.
+
 ### Modal Presentation
 
 Present modals through the push router's `presented` property. The modal transition is defined at the router level:

@@ -162,12 +162,23 @@ struct TransitionedCoverContent: View {
     let cover: AnyModalRouter.CoverTransition
 
     var body: some View {
-        ZStack {
-            Color.clear
-            if router.isCoverContentShown {
-                router.makeView()
-                    .transition(cover.transition)
+        // The container reaches past the safe area, not the content: a view
+        // in the middle of a transition is drawn inside its layout frame, so
+        // a background of the content that ignores the safe area would be cut
+        // at the safe area while it transitions and jump to the edges once it
+        // has. The container is therefore full-bleed, and the content gets
+        // the safe area back as padding — which its own `ignoresSafeArea()`
+        // sees through at every point of the transition.
+        GeometryReader { proxy in
+            ZStack {
+                Color.clear
+                if router.isCoverContentShown {
+                    router.makeView()
+                        .safeAreaPadding(proxy.safeAreaInsets)
+                        .transition(cover.transition)
+                }
             }
+            .ignoresSafeArea()
         }
         .presentationBackground(.clear)
         .onAppear {
