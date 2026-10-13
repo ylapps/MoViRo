@@ -64,14 +64,21 @@ struct Presentations: ViewModifier {
                 // waits for the transition in flight, and every level lands on
                 // both — at the same pace as waiting for UIKit's
                 // `viewDidAppear`, which this replaces, and with no UIKit.
+                // The turn is needed for an unanimated presentation as well:
+                // asked for inside `onAppear` with animations disabled, iOS 26
+                // dropped levels just the same (8 of 10 and 6 of 10 in the
+                // sample's chains), and iOS 27 landed them inconsistently.
                 DispatchQueue.main.async(execute: becomeReadyToPresent)
             }
     }
 
-    /// A cover with a transition of its own is presented by this flip when it
-    /// was set before the view appeared, and it must not slide in then either.
+    /// A presentation set before the view appeared is shown by this flip, so
+    /// the flip carries what the presented router asks for: no animation for
+    /// a router that appears unanimated, nor for a cover with a transition of
+    /// its own, which must not slide in.
     private func becomeReadyToPresent() {
-        guard router.fullScreen?.transition.coverTransition != nil else {
+        let pending = router.presented
+        guard pending?.appearsAnimated == false || pending?.transition.coverTransition != nil else {
             isReadyToPresent = true
             return
         }

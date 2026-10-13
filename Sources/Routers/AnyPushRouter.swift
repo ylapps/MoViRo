@@ -11,15 +11,26 @@ open class AnyPushRouter: AnyRouter {
     /// How this router's screen is pushed; see `Transition`.
     public let transition: Transition
 
-    /// Router pushed by this router
+    /// Router pushed by this router. A router that asks not to animate its
+    /// appearance (`appearsAnimated`) is pushed without the slide.
     public var pushed: AnyPushRouter? {
-        willSet {
-            pushed?.pushing = nil
-            pushed?.updateStack(with: nil)
+        get { pushedStorage }
+        set {
+            pushedStorage?.pushing = nil
+            pushedStorage?.updateStack(with: nil)
             newValue?.pushing = self
             newValue?.updateStack(with: stack)
+            guard newValue?.appearsAnimated == false else {
+                pushedStorage = newValue
+                return
+            }
+            withTransaction(\.disablesAnimations, true) {
+                pushedStorage = newValue
+            }
         }
     }
+
+    private var pushedStorage: AnyPushRouter?
 
     /// A push router presents through its stack, so a sheet survives the
     /// screen that asked for it being popped.

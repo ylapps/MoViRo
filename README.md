@@ -401,6 +401,21 @@ detail.presented = editor               // through the stack
 editor.presented = picker
 ```
 
+Every level animates by default — a push slides, a sheet rises — so a long
+chain takes a moment to land. Turn `appearsAnimated` off on every router of
+the chain but the last, and the link lands at once with only its last screen
+moving:
+
+```swift
+detail.appearsAnimated = false
+editor.appearsAnimated = false
+// picker keeps the default and rises as usual
+```
+
+`appearsAnimated` is read whenever the router is pushed or presented, whether
+its presenter is already on screen or shows it on appearing; leaving the
+screen animates as usual.
+
 ## Helpers
 
 ### AlertRoutable

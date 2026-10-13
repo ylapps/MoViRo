@@ -75,13 +75,17 @@ open class AnyModalRouter: AnyRouter {
         let leaving = presentedStorage
         leaving?.presenting = nil
         newValue?.presenting = self
-        guard leaving?.transition.coverTransition != nil || newValue?.transition.coverTransition != nil else {
+        // A cover with a transition of its own never slides: it is put up over
+        // a clear background for its content to transition into, and by the
+        // time it is taken down its content has already left. A router that
+        // asks not to animate its appearance is put up the same way.
+        let unanimated = newValue?.appearsAnimated == false
+            || leaving?.transition.coverTransition != nil
+            || newValue?.transition.coverTransition != nil
+        guard unanimated else {
             presentedStorage = newValue
             return
         }
-        // The cover itself never slides: it is put up over a clear background
-        // for its content to transition into, and by the time it is taken
-        // down its content has already left.
         withTransaction(\.disablesAnimations, true) {
             presentedStorage = newValue
         }

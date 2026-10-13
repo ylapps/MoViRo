@@ -13,6 +13,18 @@ open class AnyRouter: Identifiable {
 
     public let id = UUID()
 
+    // MARK: State
+
+    /// Whether the screen moves into place when it is shown — the push
+    /// slides, the sheet rises, the cover comes up. Off, the screen is simply
+    /// there. Read when the router is pushed or presented, and when a
+    /// presentation set before its presenter was on screen is shown by the
+    /// presenter's appearance. Turn it off on every router of a deep link's
+    /// chain but the last, and the link lands at once with only its last
+    /// screen moving. Leaving the screen animates as usual.
+    @ObservationIgnored
+    public var appearsAnimated = true
+
     // MARK: Initialization
 
     init() {
