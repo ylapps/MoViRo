@@ -13,9 +13,10 @@ public extension View {
     /// somewhere Moviro does not build — a `UIHostingController` of your own,
     /// for instance.
     ///
-    /// A presentation set before the view is on screen waits for the
-    /// transition that brings the view in to finish, so a chain of them set
-    /// up front — a deep link — lands one level after another.
+    /// A presentation set before the view is on screen is asked for one turn
+    /// after the view appears, which lets it wait for the transition that
+    /// brought the view in, so a chain of them set up front — a deep link —
+    /// lands one level after another.
     func presentations(of router: AnyModalRouter) -> some View {
         modifier(Presentations(router: router))
     }
@@ -52,14 +53,18 @@ struct Presentations: ViewModifier {
                     Text(message)
                 }
             }
-            .background {
-                // Readiness is UIKit's `viewDidAppear`, not SwiftUI's `onAppear`:
-                // the latter fires while this view's own presentation is still
-                // animating, and a presentation asked for then — the next level
-                // of a deep link, three modals deep — is built but never reaches
-                // the window. `viewDidAppear` fires once the transition is over.
-                PresentationReadiness(onDidAppear: becomeReadyToPresent)
-                    .frame(width: 0, height: 0)
+            .onAppear {
+                // One turn later, not inside `onAppear` itself. Asked for from
+                // within `onAppear`, a presentation goes out in the same
+                // transaction as the one that brought this view in, and iOS 26
+                // drops the fourth modal nested that way (the sample's deep-link
+                // builder: push·push·sheet·popover·cover+stack·push·push·sheet
+                // stopped at the seventh step, sheet·sheet·sheet·sheet at the
+                // fourth, every run; iOS 27 copes). A turn later the request
+                // waits for the transition in flight, and every level lands on
+                // both — at the same pace as waiting for UIKit's
+                // `viewDidAppear`, which this replaces, and with no UIKit.
+                DispatchQueue.main.async(execute: becomeReadyToPresent)
             }
     }
 
@@ -89,50 +94,6 @@ struct Presentations: ViewModifier {
             get: { isReadyToPresent && router.isAlertPresented },
             set: { router.isAlertPresented = $0 }
         )
-    }
-}
-
-// MARK: - Readiness
-
-/// Reports the UIKit appearance of the view it sits in: the hosting
-/// controller's `viewDidAppear`, forwarded to this child, fires once the
-/// presentation transition that brought the view in has finished.
-private struct PresentationReadiness: UIViewControllerRepresentable {
-
-    let onDidAppear: () -> Void
-
-    func makeUIViewController(context: Context) -> PresentationReadinessController {
-        PresentationReadinessController(onDidAppear: onDidAppear)
-    }
-
-    func updateUIViewController(_ controller: PresentationReadinessController, context: Context) {
-        controller.onDidAppear = onDidAppear
-    }
-}
-
-private final class PresentationReadinessController: UIViewController {
-
-    var onDidAppear: () -> Void
-
-    init(onDidAppear: @escaping () -> Void) {
-        self.onDidAppear = onDidAppear
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) is not supported")
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.isUserInteractionEnabled = false
-        view.backgroundColor = .clear
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        onDidAppear()
     }
 }
 

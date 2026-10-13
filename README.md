@@ -386,8 +386,9 @@ A deep link is the router tree built up front: create every router of the
 chain, link them, and hang the first one off a router that is on screen —
 pushes through `pushed`, presentations through `presented`, a stack inside a
 sheet through a `NavigationStackRouter`. Moviro shows each screen once the one
-under it is on screen: a push as soon as its stack is, a presentation once the
-transition that brought its presenter in has finished. Chains of any depth
+under it is on screen: a push as soon as its stack is, a presentation one turn
+after its presenter appears — which is what lets it wait for the transition
+that brought the presenter in. Chains of any depth
 land this way — push → push → sheet → popover → full screen with a stack →
 push → push → sheet → sheet → full screen is the one the sample app opens.
 
@@ -465,7 +466,7 @@ content hosted in a `UIHostingController` of your own:
 | Modifier | What it does |
 |---|---|
 | `.appearance(of: model)` | Runs the model's `onAppear()` / `onDisappear()` with the view's appearance. `BaseView.with(model)` is `Self(model:)` plus this |
-| `.presentations(of: modalRouter)` | Hangs the sheet, full-screen cover, popover and alert the router presents off the view. A presentation set before the view is on screen waits for the transition that brings the view in to finish, so a chain of presets — a deep link — lands one level after another |
+| `.presentations(of: modalRouter)` | Hangs the sheet, full-screen cover, popover and alert the router presents off the view. A presentation set before the view is on screen is asked for one turn after the view appears, so a chain of presets — a deep link — lands one level after another |
 | `.pushDestination(of: pushRouter)` | Hangs the screen the router pushes off the view, through `navigationDestination(item:)` |
 
 ```swift
